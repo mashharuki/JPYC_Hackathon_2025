@@ -1,6 +1,7 @@
 "use client"
 
 import { usePrivy } from "@privy-io/react-auth"
+import { Button } from "@/components/ui"
 
 /**
  * Authコンポーネント:
@@ -10,20 +11,15 @@ export default function Auth() {
   const { login, ready } = usePrivy()
 
   return (
-    <div className="auth-container">
-      <h3>Login with Privy</h3>
-      <p style={{ fontSize: "14px", marginBottom: "20px" }}>
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">Login with Privy</h3>
+      <p className="text-sm text-slate-300 mb-5">
         メール、ウォレット、またはGoogleアカウントを使用してログインし、Semaphoreアイデンティティを管理します。
       </p>
 
-      <button
-        className="button secondary"
-        onClick={login}
-        disabled={!ready}
-        style={{ width: "100%", backgroundColor: "#3B82F6", color: "white" }}
-      >
+      <Button onClick={login} disabled={!ready} className="w-full" aria-label="Login with Privy" aria-busy={!ready}>
         {!ready ? "Loading..." : "Login with Privy"}
-      </button>
+      </Button>
     </div>
   )
 }

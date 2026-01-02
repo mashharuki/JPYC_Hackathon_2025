@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import Auth from "../components/Auth"
 import Stepper from "../components/Stepper"
-import { Spinner } from "@/components/ui/spinner"
+import { Button, Spinner } from "@/components/ui"
 import { useAuth } from "../context/AuthContext"
 import { useLogContext } from "../context/LogContext"
 import { supabase } from "../utils/supabase"
@@ -93,17 +93,17 @@ export default function IdentitiesPage() {
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="flex justify-between items-center mb-4">
         <h2>Identities</h2>
         {user && (
-          <button className="button" onClick={logout} style={{ padding: "5px 10px", fontSize: "14px" }}>
+          <Button onClick={logout} variant="outline" size="sm" aria-label="Logout">
             Logout
-          </button>
+          </Button>
         )}
       </div>
 
       {!user ? (
-        <div className="key-wrapper">
+        <div className="py-6">
           <Auth />
         </div>
       ) : (
@@ -156,9 +156,16 @@ export default function IdentitiesPage() {
 
           {!_identity && (
             <div>
-              <button className="button" onClick={createIdentity} type="button" disabled={fetchingIdentity}>
+              <Button
+                onClick={createIdentity}
+                type="button"
+                disabled={fetchingIdentity}
+                className="w-full"
+                aria-label="Create new Semaphore identity"
+                aria-busy={fetchingIdentity}
+              >
                 Create identity
-              </button>
+              </Button>
             </div>
           )}
 

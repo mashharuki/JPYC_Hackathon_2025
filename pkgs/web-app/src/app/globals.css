@@ -90,8 +90,8 @@ b {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 40vw;
-  min-width: 35rem;
+  max-width: 48rem;
+  width: 100%;
   margin: auto;
   padding: 1rem;
   height: calc(100vh - 7rem - 1px);
@@ -147,62 +147,7 @@ a:hover {
   text-decoration-color: var(--blue400);
 }
 
-.button {
-  border-radius: 100px;
-  font-weight: 400;
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-duration: 200ms;
-  padding-left: 18px !important;
-  padding-right: 18px !important;
-  height: 2.5rem;
-  min-width: 2.5rem;
-  font-size: 1rem;
-  -webkit-padding-start: 1rem;
-  padding-inline-start: 1rem;
-  -webkit-padding-end: 1rem;
-  padding-inline-end: 1rem;
-  background: var(--blue500);
-  color: white;
-  background-image: linear-gradient(to right, var(--blue500), var(--blue800));
-  transition-timing-function: linear;
-  width: 100%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.button:hover {
-  background-color: var(--blue800);
-  background-image: none;
-  cursor: pointer;
-}
-
-.button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.button:disabled:hover {
-  background-color: var(--blue800);
-  background-image: none;
-}
-
-.button-stepper {
-  cursor: pointer;
-  color: var(--blue500);
-  font-size: 1.1rem;
-  border: none;
-  background: none;
-  width: 4rem;
-  margin: 0 1rem;
-  display: flex;
-  justify-content: center;
-}
-
-.button-stepper:hover {
-  text-decoration: underline;
-}
+/* Button styles moved to Radix UI Button component */
 
 .refresh-wrapper {
   color: var(--slate400);
@@ -243,34 +188,6 @@ a:hover {
 
 .refresh-icon {
   margin-inline-end: 0.5rem;
-}
-
-.stepper-icon {
-  display: inline-flex;
-  align-self: center;
-  -webkit-flex-shrink: 0;
-  -ms-flex-negative: 0;
-  flex-shrink: 0;
-}
-
-.left-pad {
-  margin-inline-end: 0.5rem;
-}
-
-.right-pad {
-  margin-inline-start: 0.5rem;
-}
-
-.stepper-icon svg {
-  width: 1em;
-  height: 1em;
-  display: inline-block;
-  line-height: 1em;
-  -webkit-flex-shrink: 0;
-  -ms-flex-negative: 0;
-  flex-shrink: 0;
-  color: currentColor;
-  vertical-align: super;
 }
 
 .box {
@@ -373,24 +290,9 @@ a:hover {
   height: 2rem;
 }
 
-.loader {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  border-top: 2px solid var(--slate100);
-  border-right: 2px solid transparent;
-  animation: spin 1s linear infinite;
-  z-index: 20;
-  margin-left: 0.5rem;
-}
+/* Loader moved to Spinner component */
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Glassmorphism effects */
+/* Glassmorphism effects - available for future use */
 .glass {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
@@ -407,10 +309,15 @@ a:hover {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-/* Responsive container improvements */
+/* Responsive design improvements */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 90%;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
-    min-width: 100%;
     max-width: 100%;
     padding: 0.75rem;
   }
@@ -423,9 +330,27 @@ a:hover {
     font-size: 1rem;
   }
 
-  .button {
-    font-size: 0.875rem;
-    height: 2.25rem;
+  .header {
+    padding: 0 0.75rem;
+  }
+
+  .text-top {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .header-right {
+    gap: 0.75rem;
   }
 }
 

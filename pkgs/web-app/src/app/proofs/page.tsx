@@ -1,6 +1,17 @@
 "use client"
 
 import Stepper from "@/components/Stepper"
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Spinner,
+  Textarea
+} from "@/components/ui"
 import { useLogContext } from "@/context/LogContext"
 import { useSemaphoreContext } from "@/context/SemaphoreContext"
 import { useBiconomy } from "@/hooks/useBiconomy"
@@ -20,6 +31,8 @@ export default function ProofsPage() {
   const { setLog } = useLogContext()
   const { _users, _feedback, refreshUsers, refreshFeedback, addFeedback } = useSemaphoreContext()
   const [_loading, setLoading] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [feedbackMessage, setFeedbackMessage] = useState("")
   const { _identity, loading: identityLoading } = useSemaphoreIdentity()
   const { initializeBiconomyAccount, sendTransaction, isLoading: biconomyLoading } = useBiconomy()
 
@@ -48,13 +61,12 @@ export default function ProofsPage() {
    * フィードバックを送信する（Biconomy AA経由）
    */
   const sendFeedback = useCallback(async () => {
-    if (!_identity) {
+    if (!_identity || !feedbackMessage.trim()) {
       return
     }
 
-    const feedbackMessage = prompt("Please enter your feedback:")
-
     if (feedbackMessage && _users) {
+      setDialogOpen(false)
       setLoading(true)
       setLog(`Generating zero-knowledge proof...`)
 
@@ -119,6 +131,7 @@ export default function ProofsPage() {
           addFeedback(feedbackMessage)
           setLog(`Your anonymous feedback has been posted! 🎉 Transaction: ${txHash}`)
           toast.success("Feedback posted successfully!", { id: toastId })
+          setFeedbackMessage("")
         } else {
           throw new Error("Transaction hash not returned")
         }
@@ -131,10 +144,23 @@ export default function ProofsPage() {
         setLoading(false)
       }
     }
-  }, [_identity, _users, addFeedback, setLog, refreshUsers, initializeBiconomyAccount, sendTransaction])
+  }, [
+    _identity,
+    _users,
+    feedbackMessage,
+    addFeedback,
+    setLog,
+    refreshUsers,
+    initializeBiconomyAccount,
+    sendTransaction
+  ])
 
   if (identityLoading) {
-    return <div className="loader"></div>
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Spinner size="lg" />
+      </div>
+    )
   }
 
   return (
@@ -154,7 +180,7 @@ export default function ProofsPage() {
 
       <div className="text-top">
         <h3>Feedback ({_feedback.length})</h3>
-        <button className="refresh-button" onClick={refreshFeedback}>
+        <button className="refresh-button" onClick={refreshFeedback} aria-label="Refresh feedback list">
           <span className="refresh-span">
             <svg viewBox="0 0 24 24" focusable="false" className="refresh-icon">
               <path
@@ -177,17 +203,66 @@ export default function ProofsPage() {
         </div>
       )}
 
-      <div>
-        <button
-          className="button"
-          onClick={sendFeedback}
+      <div className="mt-6">
+        <Button
+          onClick={() => setDialogOpen(true)}
           disabled={_loading || biconomyLoading || !_identity}
           type="button"
+          className="w-full"
+          aria-label="Send anonymous feedback"
+          aria-busy={_loading || biconomyLoading}
         >
           <span>Send Feedback</span>
-          {(_loading || biconomyLoading) && <div className="loader"></div>}
-        </button>
+          {(_loading || biconomyLoading) && <Spinner size="sm" className="ml-2" />}
+        </Button>
       </div>
+
+      {/* Feedback Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Anonymous Feedback</DialogTitle>
+            <DialogDescription>
+              Your feedback will be submitted anonymously using zero-knowledge proofs. No one will know who sent it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              placeholder="Enter your feedback here..."
+              value={feedbackMessage}
+              onChange={(e) => setFeedbackMessage(e.target.value)}
+              className="min-h-[120px]"
+              aria-label="Feedback message"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDialogOpen(false)
+                setFeedbackMessage("")
+              }}
+              disabled={_loading || biconomyLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={sendFeedback}
+              disabled={_loading || biconomyLoading || !feedbackMessage.trim()}
+              aria-busy={_loading || biconomyLoading}
+            >
+              {_loading || biconomyLoading ? (
+                <>
+                  <Spinner size="sm" className="mr-2" />
+                  Sending...
+                </>
+              ) : (
+                "Send"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="divider" />
 

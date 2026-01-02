@@ -26,6 +26,7 @@
   ],
   "packageManager": "yarn@4.1.0",
   "devDependencies": {
+    "lefthook": "^2.0.13",
     "prettier": "^3.2.5"
   }
 }

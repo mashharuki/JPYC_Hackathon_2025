@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
-import { config } from "dotenv";
-import fs from "fs";
+import { config } from "dotenv"
+import fs from "fs"
 // import withPWA from "next-pwa"
 
 if (!fs.existsSync("./.env")) {
@@ -13,6 +13,6 @@ if (!fs.existsSync("./.env")) {
 //   dest: "public",
 //   disable: process.env.NODE_ENV === "development"
 // })({})
-const nextConfig = {};
+const nextConfig = {}
 
 export default nextConfig

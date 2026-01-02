@@ -51,7 +51,6 @@ jest.mock("react-hot-toast", () => {
   }
 })
 
-
 describe("GroupsPage (AA Integration)", () => {
   const mockIdentity = {
     commitment: BigInt("12345678901234567890")

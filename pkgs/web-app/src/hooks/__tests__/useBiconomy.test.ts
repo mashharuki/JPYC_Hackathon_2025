@@ -121,11 +121,13 @@ describe("useBiconomy", () => {
     const txHash = await result.current.sendTransaction(mockTo, mockData, initializedAccount.nexusClient)
 
     expect(txHash).toBe(mockTxHash)
-    expect(mockNexusClient.sendTransaction).toHaveBeenCalledWith(expect.objectContaining({
-      to: mockTo,
-      data: mockData,
-      chain: expect.any(Object) // baseSepolia
-    }))
+    expect(mockNexusClient.sendTransaction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: mockTo,
+        data: mockData,
+        chain: expect.any(Object) // baseSepolia
+      })
+    )
   })
 
   it("should handle transaction errors", async () => {
@@ -157,6 +159,8 @@ describe("useBiconomy", () => {
     const mockTo = "0x9876543210987654321098765432109876543210"
     const mockData = "0x12345678"
 
-    await expect(result.current.sendTransaction(mockTo, mockData, initializedAccount.nexusClient)).rejects.toThrow("Transaction failed")
+    await expect(result.current.sendTransaction(mockTo, mockData, initializedAccount.nexusClient)).rejects.toThrow(
+      "Transaction failed"
+    )
   })
 })

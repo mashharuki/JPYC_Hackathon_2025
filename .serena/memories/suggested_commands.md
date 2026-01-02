@@ -1,12 +1,14 @@
 # Suggested Commands
 
 ## Root Shortcuts
+
 - `yarn dev`: Start development servers for both contracts (local node) and web app.
 - `yarn lint`: Run linting across all workspaces.
 - `yarn prettier:write`: Fix code formatting across all workspaces.
 
 ## Contracts (`pkgs/contracts`)
-*Alias: `yarn contracts`*
+
+_Alias: `yarn contracts`_
 
 - `yarn contracts compile`: Compile smart contracts.
 - `yarn contracts test`: Run smart contract tests.
@@ -16,7 +18,8 @@
   - Example: `yarn contracts deploy --semaphore 0x8A1fd199516489B0Fb7153EB5f075cDAC83c693D --network baseSepolia`
 
 ## Web App (`pkgs/web-app`)
-*Alias: `yarn web-app`*
+
+_Alias: `yarn web-app`_
 
 - `yarn web-app dev`: Start the Next.js development server.
 - `yarn web-app build`: Build the application for production.
@@ -24,6 +27,7 @@
 - `yarn web-app test`: Run Jest tests.
 
 ## Setup
+
 - `yarn`: Install dependencies.
 - `cp pkgs/contracts/.env.example pkgs/contracts/.env`: Setup contract env vars.
 - `cp pkgs/web-app/.env.example pkgs/web-app/.env.local`: Setup web app env vars.

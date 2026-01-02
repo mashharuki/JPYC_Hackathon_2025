@@ -1,0 +1,24 @@
+# lefthook.yml
+
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: "**/*.{js,ts,jsx,tsx,json,md,sol}"
+      run: yarn exec prettier --write {staged_files} && git add {staged_files}
+
+    lint-contracts:
+      root: pkgs/contracts
+      glob: "**/*.{js,ts,sol}"
+      run: yarn lint
+
+pre-push:
+  parallel: true
+  commands:
+    test-contracts:
+      root: pkgs/contracts
+      run: yarn test
+
+    test-web-app:
+      root: pkgs/web-app
+      run: yarn test

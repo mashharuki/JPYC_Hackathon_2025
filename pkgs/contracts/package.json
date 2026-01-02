@@ -6,7 +6,7 @@
     "compile": "hardhat compile",
     "deploy": "yarn compile && hardhat deploy",
     "verify": "hardhat verify",
-    "test": "hardhat test",
+    "test": "hardhat test --network hardhat",
     "test:report-gas": "REPORT_GAS=true hardhat test",
     "test:coverage": "hardhat coverage",
     "typechain": "hardhat typechain",

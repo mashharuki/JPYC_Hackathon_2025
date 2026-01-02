@@ -72,7 +72,14 @@ const writeContractAddress = ({
 }) => {
   try {
     const filePath = getFilePath({ network })
-    const base = jsonfile.readFileSync(filePath)
+    let base = {}
+    if (fs.existsSync(filePath)) {
+      try {
+        base = jsonfile.readFileSync(filePath)
+      } catch (e) {
+        base = {}
+      }
+    }
     updateJson({
       group,
       name,

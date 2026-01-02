@@ -77,6 +77,9 @@ jobs:
 
       - name: Compile contracts
         run: yarn contracts compile
+        env:
+          # ダミー値
+          PRIVATE_KEY: "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
 
       - name: Run contract tests
         run: yarn contracts test
@@ -88,6 +91,8 @@ jobs:
         run: yarn contracts test:report-gas
         env:
           REPORT_GAS: true
+          # ダミー値
+          PRIVATE_KEY: "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
 
   build-web-app:
     name: Build Next.js Web App

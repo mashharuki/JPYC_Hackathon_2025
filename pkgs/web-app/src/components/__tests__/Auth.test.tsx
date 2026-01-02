@@ -47,7 +47,8 @@ describe("Auth Component (Privy Integration)", () => {
 
     render(<Auth />)
 
-    const loginButton = screen.getByRole("button", { name: /loading/i })
+    const loginButton = screen.getByRole("button", { name: /login with privy/i })
     expect(loginButton).toBeDisabled()
+    expect(loginButton).toHaveTextContent(/loading/i)
   })
 })

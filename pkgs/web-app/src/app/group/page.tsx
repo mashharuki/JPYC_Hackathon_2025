@@ -1,6 +1,6 @@
 "use client"
 import Stepper from "@/components/Stepper"
-import { Spinner } from "@/components/ui/spinner"
+import { Button, Spinner } from "@/components/ui"
 import { useLogContext } from "@/context/LogContext"
 import { useSemaphoreContext } from "@/context/SemaphoreContext"
 import { useBiconomy } from "@/hooks/useBiconomy"
@@ -211,16 +211,8 @@ export default function GroupsPage() {
 
       {/* 参加状態の表示 */}
       {_identity && userHasJoined && (
-        <div
-          style={{
-            padding: "10px",
-            marginBottom: "10px",
-            backgroundColor: "#2d3748",
-            borderRadius: "8px",
-            border: "1px solid #4a5568"
-          }}
-        >
-          <p style={{ margin: 0, color: "#48bb78" }}>✓ You are already a member of this group</p>
+        <div className="p-3 mb-3 bg-slate-800 rounded-lg border border-slate-700">
+          <p className="m-0 text-green-400">✓ You are already a member of this group</p>
         </div>
       )}
 
@@ -234,16 +226,18 @@ export default function GroupsPage() {
         </div>
       )}
 
-      <div className="join-group-button">
-        <button
-          className="button"
+      <div className="mt-6">
+        <Button
           onClick={joinGroup}
           disabled={_loading || biconomyLoading || !_identity || userHasJoined}
           type="button"
+          className="w-full"
+          aria-label="Join the Feedback group"
+          aria-busy={_loading || biconomyLoading}
         >
           <span>Join group</span>
           {(_loading || biconomyLoading) && <Spinner size="sm" className="ml-2" />}
-        </button>
+        </Button>
       </div>
 
       <div className="divider" />

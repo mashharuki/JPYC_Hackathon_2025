@@ -96,7 +96,7 @@ describe("GroupsPage (AA Integration)", () => {
 
     expect(screen.getByText("Groups")).toBeInTheDocument()
     expect(screen.getByText(`Group users (${mockUsers.length})`)).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /join group/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /join the feedback group/i })).toBeInTheDocument()
   })
 
   it("should join group using Biconomy AA", async () => {
@@ -135,7 +135,7 @@ describe("GroupsPage (AA Integration)", () => {
 
     render(<GroupsPage />)
 
-    const joinButton = screen.getByRole("button", { name: /join group/i })
+    const joinButton = screen.getByRole("button", { name: /join the feedback group/i })
     fireEvent.click(joinButton)
 
     await waitFor(() => {
@@ -187,7 +187,7 @@ describe("GroupsPage (AA Integration)", () => {
 
     render(<GroupsPage />)
 
-    const joinButton = screen.getByRole("button", { name: /join group/i })
+    const joinButton = screen.getByRole("button", { name: /join the feedback group/i })
     fireEvent.click(joinButton)
 
     await waitFor(() => {
@@ -224,7 +224,7 @@ describe("GroupsPage (AA Integration)", () => {
 
     render(<GroupsPage />)
 
-    const joinButton = screen.getByRole("button", { name: /join group/i })
+    const joinButton = screen.getByRole("button", { name: /join the feedback group/i })
     expect(joinButton).toBeDisabled()
   })
 })

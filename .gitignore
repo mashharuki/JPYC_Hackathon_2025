@@ -17,7 +17,6 @@ pids
 *.pid.lock
 
 # IDE
-.vscode
 .idea
 
 # Dependency directories

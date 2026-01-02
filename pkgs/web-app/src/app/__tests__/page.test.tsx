@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react"
 import "@testing-library/jest-dom"
+import { render, screen, waitFor } from "@testing-library/react"
 import IdentitiesPage from "../page"
 
 // モック
@@ -8,9 +8,7 @@ jest.mock("../../context/AuthContext", () => ({
 }))
 
 jest.mock("../../context/LogContext", () => ({
-  useLogContext: jest.fn(() => ({
-    setLog: jest.fn()
-  }))
+  useLogContext: jest.fn()
 }))
 
 jest.mock("../../utils/supabase", () => ({
@@ -45,6 +43,14 @@ jest.mock("../../components/Stepper", () => {
 })
 
 describe("IdentitiesPage (Privy Integration)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    const { useLogContext } = require("../../context/LogContext")
+    useLogContext.mockReturnValue({
+      setLog: jest.fn()
+    })
+  })
+
   it("should show Auth component when user is not authenticated", () => {
     const { useAuth } = require("../../context/AuthContext")
     useAuth.mockReturnValue({
@@ -60,8 +66,13 @@ describe("IdentitiesPage (Privy Integration)", () => {
     expect(screen.getByText("Auth Component")).toBeInTheDocument()
   })
 
-  it("should show logout button when user is authenticated", () => {
+  it("should show logout button when user is authenticated", async () => {
     const { useAuth } = require("../../context/AuthContext")
+    const { useLogContext } = require("../../context/LogContext")
+    const mockSetLog = jest.fn()
+    useLogContext.mockReturnValue({
+      setLog: mockSetLog
+    })
     const mockLogout = jest.fn()
     useAuth.mockReturnValue({
       user: { id: "test-privy-user-id" },
@@ -75,10 +86,19 @@ describe("IdentitiesPage (Privy Integration)", () => {
 
     const logoutButton = screen.getByRole("button", { name: /logout/i })
     expect(logoutButton).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(mockSetLog).toHaveBeenCalledWith("Identity not found for this account. Create a new one below! 👇🏽")
+    })
   })
 
   it("should call logout when logout button is clicked", async () => {
     const { useAuth } = require("../../context/AuthContext")
+    const { useLogContext } = require("../../context/LogContext")
+    const mockSetLog = jest.fn()
+    useLogContext.mockReturnValue({
+      setLog: mockSetLog
+    })
     const mockLogout = jest.fn()
     useAuth.mockReturnValue({
       user: { id: "test-privy-user-id" },
@@ -89,6 +109,10 @@ describe("IdentitiesPage (Privy Integration)", () => {
     })
 
     render(<IdentitiesPage />)
+
+    await waitFor(() => {
+      expect(mockSetLog).toHaveBeenCalledWith("Identity not found for this account. Create a new one below! 👇🏽")
+    })
 
     const logoutButton = screen.getByRole("button", { name: /logout/i })
     logoutButton.click()

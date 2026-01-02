@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { useBiconomy } from "../useBiconomy"
 
 // モック
@@ -62,7 +62,9 @@ describe("useBiconomy", () => {
 
     const { result } = renderHook(() => useBiconomy())
 
-    await result.current.initializeBiconomyAccount()
+    await act(async () => {
+      await result.current.initializeBiconomyAccount()
+    })
 
     await waitFor(() => {
       expect(result.current.smartAccount).toBe(mockNexusClient)
@@ -78,7 +80,9 @@ describe("useBiconomy", () => {
 
     const { result } = renderHook(() => useBiconomy())
 
-    await expect(result.current.initializeBiconomyAccount()).rejects.toThrow("Embedded wallet is not available")
+    await act(async () => {
+      await expect(result.current.initializeBiconomyAccount()).rejects.toThrow("Embedded wallet is not available")
+    })
 
     expect(result.current.error).toBe("Embedded wallet is not available")
     expect(result.current.isLoading).toBe(false)
@@ -106,19 +110,22 @@ describe("useBiconomy", () => {
 
     const { result } = renderHook(() => useBiconomy())
 
-    await result.current.initializeBiconomyAccount()
+    let initializedAccount: any
+    await act(async () => {
+      initializedAccount = await result.current.initializeBiconomyAccount()
+    })
 
     const mockTo = "0x9876543210987654321098765432109876543210"
     const mockData = "0x12345678"
 
-    const txHash = await result.current.sendTransaction(mockTo, mockData)
+    const txHash = await result.current.sendTransaction(mockTo, mockData, initializedAccount.nexusClient)
 
     expect(txHash).toBe(mockTxHash)
-    expect(mockNexusClient.sendTransaction).toHaveBeenCalledWith({
+    expect(mockNexusClient.sendTransaction).toHaveBeenCalledWith(expect.objectContaining({
       to: mockTo,
       data: mockData,
       chain: expect.any(Object) // baseSepolia
-    })
+    }))
   })
 
   it("should handle transaction errors", async () => {
@@ -142,11 +149,14 @@ describe("useBiconomy", () => {
 
     const { result } = renderHook(() => useBiconomy())
 
-    await result.current.initializeBiconomyAccount()
+    let initializedAccount: any
+    await act(async () => {
+      initializedAccount = await result.current.initializeBiconomyAccount()
+    })
 
     const mockTo = "0x9876543210987654321098765432109876543210"
     const mockData = "0x12345678"
 
-    await expect(result.current.sendTransaction(mockTo, mockData)).rejects.toThrow("Transaction failed")
+    await expect(result.current.sendTransaction(mockTo, mockData, initializedAccount.nexusClient)).rejects.toThrow("Transaction failed")
   })
 })

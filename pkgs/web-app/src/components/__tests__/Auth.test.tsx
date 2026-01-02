@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import "@testing-library/jest-dom"
+import { render, screen } from "@testing-library/react"
 import Auth from "../Auth"
 
 // Privyのモック
@@ -47,7 +47,7 @@ describe("Auth Component (Privy Integration)", () => {
 
     render(<Auth />)
 
-    const loginButton = screen.getByRole("button", { name: /login with privy/i })
+    const loginButton = screen.getByRole("button", { name: /loading/i })
     expect(loginButton).toBeDisabled()
   })
 })

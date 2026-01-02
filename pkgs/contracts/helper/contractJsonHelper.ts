@@ -14,13 +14,13 @@ const getFilePath = ({
   basePath?: string
   suffix?: string
 }): string => {
-  const _basePath = basePath ? basePath : BASE_PATH
-  const commonFilePath = `${_basePath}/${BASE_NAME}-${network}`
+  const resolvedBasePath = basePath ?? BASE_PATH
+  const commonFilePath = `${resolvedBasePath}/${BASE_NAME}-${network}`
   return suffix ? `${commonFilePath}-${suffix}.${EXTENSTION}` : `${commonFilePath}.${EXTENSTION}`
 }
 
 const resetContractAddressesJson = ({ network }: { network: string }): void => {
-  const fileName = getFilePath({ network: network })
+  const fileName = getFilePath({ network })
   if (fs.existsSync(fileName)) {
     const folderName = "tmp"
     fs.mkdirSync(folderName, { recursive: true })
@@ -35,7 +35,7 @@ const resetContractAddressesJson = ({ network }: { network: string }): void => {
     fs.renameSync(
       fileName,
       getFilePath({
-        network: network,
+        network,
         basePath: `./tmp`,
         suffix: strDate
       })
@@ -45,11 +45,11 @@ const resetContractAddressesJson = ({ network }: { network: string }): void => {
 }
 
 const loadDeployedContractAddresses = (network: string) => {
-  const filePath = getFilePath({ network: network })
+  const filePath = getFilePath({ network })
   return jsonfile.readFileSync(filePath)
 }
 
-const _updateJson = ({ group, name, value, obj }: { group: string; name: string | null; value: any; obj: any }) => {
+const updateJson = ({ group, name, value, obj }: { group: string; name: string | null; value: any; obj: any }) => {
   if (obj[group] === undefined) obj[group] = {}
   if (name === null) {
     obj[group] = value
@@ -71,12 +71,12 @@ const writeContractAddress = ({
   network: string
 }) => {
   try {
-    const filePath = getFilePath({ network: network })
+    const filePath = getFilePath({ network })
     const base = jsonfile.readFileSync(filePath)
-    _updateJson({
-      group: group,
-      name: name,
-      value: value,
+    updateJson({
+      group,
+      name,
+      value,
       obj: base
     })
     const output = JSON.stringify(base, null, 2)
@@ -89,7 +89,7 @@ const writeContractAddress = ({
 const writeValueToGroup = ({ group, value, fileName }: { group: string; value: any; fileName: string }) => {
   try {
     const base = jsonfile.readFileSync(fileName)
-    _updateJson({ group: group, name: null, value: value, obj: base })
+    updateJson({ group, name: null, value, obj: base })
     const output = JSON.stringify(base, null, 2)
     fs.writeFileSync(fileName, output)
   } catch (e) {

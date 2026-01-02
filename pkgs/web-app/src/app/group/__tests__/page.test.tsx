@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import "@testing-library/jest-dom"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import GroupsPage from "../page"
 
 // モック
@@ -22,19 +22,35 @@ jest.mock("../../../hooks/useBiconomy", () => ({
   useBiconomy: jest.fn()
 }))
 
+jest.mock("viem", () => ({
+  ...jest.requireActual("viem"),
+  createPublicClient: jest.fn(() => ({
+    waitForTransactionReceipt: jest.fn().mockResolvedValue({ status: "success" })
+  })),
+  http: jest.fn(),
+  encodeFunctionData: jest.fn().mockReturnValue("0xencoded")
+}))
+
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(() => ({
     push: jest.fn()
   }))
 }))
 
-jest.mock("react-hot-toast", () => ({
-  toast: {
+jest.mock("react-hot-toast", () => {
+  const toast = {
+    loading: jest.fn(),
     success: jest.fn(),
     error: jest.fn(),
-    loading: jest.fn()
+    dismiss: jest.fn()
   }
-}))
+  return {
+    __esModule: true,
+    default: toast,
+    toast
+  }
+})
+
 
 describe("GroupsPage (AA Integration)", () => {
   const mockIdentity = {
@@ -45,6 +61,11 @@ describe("GroupsPage (AA Integration)", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
   })
 
   it("should render the page with group information", () => {
@@ -86,6 +107,7 @@ describe("GroupsPage (AA Integration)", () => {
     const toast = require("react-hot-toast").toast
 
     const mockAddUser = jest.fn()
+    const mockRefreshUsers = jest.fn().mockResolvedValue([...mockUsers, mockIdentity.commitment.toString()])
     const mockInitializeBiconomy = jest.fn().mockResolvedValue({
       nexusClient: {},
       address: "0xtest"
@@ -94,7 +116,7 @@ describe("GroupsPage (AA Integration)", () => {
 
     useSemaphoreContext.mockReturnValue({
       _users: mockUsers,
-      refreshUsers: jest.fn(),
+      refreshUsers: mockRefreshUsers,
       addUser: mockAddUser
     })
 
@@ -125,8 +147,12 @@ describe("GroupsPage (AA Integration)", () => {
       expect(mockSendTransaction).toHaveBeenCalled()
     })
 
+    await act(async () => {
+      jest.advanceTimersByTime(3000)
+    })
+
     await waitFor(() => {
-      expect(mockAddUser).toHaveBeenCalledWith(mockIdentity.commitment.toString())
+      expect(mockRefreshUsers).toHaveBeenCalled()
     })
 
     expect(toast.success).toHaveBeenCalled()

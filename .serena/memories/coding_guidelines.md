@@ -1,31 +1,47 @@
-# Coding Guidelines
+# Coding Guidelines: JPYC Hackathon 2025
 
-## General Principles
-- **Language**: Use clear and natural Japanese for communication unless specified otherwise.
-- **TDD**: Follow Test-Driven Development principles (Red-Green-Refactor).
-- **Quality**: Adhere to DRY (Don't Repeat Yourself) and KISS (Keep It Simple, Stupid) principles.
-- **Boy Scout Rule**: Leave the code better than you found it.
+## General Policy
+- **Language**: Output in clear, natural Japanese unless specified otherwise.
+- **Process**: Use step-by-step reasoning for complex tasks.
+- **Activation**: Always activate the project.
+- **Onboarding**: Ensure onboarding is performed.
+
+## Development Philosophy
+- **Quality**: Balance working code with quality, maintainability, and safety.
+- **Boy Scout Rule**: Leave code better than you found it.
+- **TDD**: Follow t-wada's TDD principles.
 
 ## Error Handling
-- Fix root causes, do not suppress errors.
-- Provide clear error messages.
-- Cover error cases in tests.
+- **Resolve All**: Fix even seemingly unrelated errors.
+- **No Suppression**: Do not use `@ts-ignore` or empty `try-catch` blocks. Fix root causes.
+- **Early Detection**: Fail fast with clear messages.
+- **Testing**: Cover error cases in tests.
+- **Resilience**: Assume external APIs/networks will fail.
+
+## Code Quality
+- **DRY**: Single source of truth.
+- **Naming**: Intent-revealing names.
+- **Consistency**: Maintain project-wide style.
+- **Broken Windows**: Fix small issues immediately.
+- **Comments**: Explain "Why", not "What".
+
+## Testing Discipline
+- **No Skips**: Fix broken tests, don't skip them.
+- **Behavior**: Test behavior, not implementation details.
+- **Independence**: Tests must be order-independent.
+- **Speed/Determinism**: Fast and deterministic tests.
 
 ## Security
-- No hardcoded secrets (use environment variables).
-- Validate all external inputs.
-- Follow the principle of least privilege.
+- **Secrets**: Use environment variables (NO hardcoding).
+- **Validation**: Validate all external inputs.
+- **Least Privilege**: Minimal permissions.
 
-## Git Conventions
-- **Commit Messages**: Use Conventional Commits (feat, fix, docs, test, refactor, chore).
-- **Language**: Write commit messages in English.
-- **Granularity**: Atomic commits focusing on single changes.
+## Git Workflow
+- **Conventional Commits**: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`.
+- **Atomic Commits**: Focus on a single change.
+- **Messages**: Clear, descriptive messages in **English**.
 
-## Testing
-- Do not skip tests.
-- Test behavior, not implementation details.
-- Ensure tests are independent and fast.
-
-## Documentation
-- Keep README and other docs updated.
-- Document design decisions (ADR).
+## Tech Stack Specifics
+- **Frontend**: Next.js (App Router), Tailwind CSS.
+- **Contracts**: Hardhat, Solidity.
+- **Auth/Web3**: Privy, Biconomy, Semaphore.

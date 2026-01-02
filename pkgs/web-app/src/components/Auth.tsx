@@ -1,7 +1,7 @@
 "use client"
 
-import { usePrivy } from "@privy-io/react-auth"
 import { Button } from "@/components/ui"
+import { usePrivy } from "@privy-io/react-auth"
 
 /**
  * Authコンポーネント:

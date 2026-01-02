@@ -28,6 +28,9 @@ typechain-types
 .DS_Store
 *.pem
 
+# Claude generated assets
+.claude/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

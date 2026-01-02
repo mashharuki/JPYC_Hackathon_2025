@@ -1,5 +1,11 @@
 # JPYC_Hackathon_2025
 
+[![CI](https://github.com/mashharuki/JPYC_Hackathon_2025/actions/workflows/ci.yml/badge.svg)](https://github.com/mashharuki/JPYC_Hackathon_2025/actions/workflows/ci.yml)
+
+## Web URL
+
+[Vercel - Web App URL]()
+
 ## 動かし方
 
 ### セットアップ

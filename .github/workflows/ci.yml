@@ -39,7 +39,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Run ESLint
-        run: yarn lint
+        run: yarn contracts lint
 
       - name: Check Prettier formatting
         run: yarn prettier
@@ -80,6 +80,9 @@ jobs:
 
       - name: Run contract tests
         run: yarn contracts test
+        env:
+          # ダミー値
+          PRIVATE_KEY: "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
 
       - name: Run contract tests with gas report
         run: yarn contracts test:report-gas
@@ -131,8 +134,6 @@ jobs:
         run: yarn web-app run build
         env:
           NEXT_PUBLIC_DEFAULT_NETWORK: localhost
-          # ダミー値
-          PRIVATE_KEY: "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0"
           NEXT_PUBLIC_FEEDBACK_CONTRACT_ADDRESS: "0xA3aabaB53464eeD2BFEc0c77d5D8b110887cFA7F"
           NEXT_PUBLIC_SEMAPHORE_CONTRACT_ADDRESS: "0x1e0d7FF1610e480fC93BdEC510811ea2Ba6d7c2f"
           NEXT_PUBLIC_GROUP_ID: 0

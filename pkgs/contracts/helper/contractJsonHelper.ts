@@ -105,9 +105,10 @@ const writeValueToGroup = ({ group, value, fileName }: { group: string; value: a
 }
 
 export {
-  getFilePath,
-  loadDeployedContractAddresses,
-  resetContractAddressesJson,
-  writeContractAddress,
-  writeValueToGroup
+    getFilePath,
+    loadDeployedContractAddresses,
+    resetContractAddressesJson,
+    writeContractAddress,
+    writeValueToGroup
 }
+

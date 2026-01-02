@@ -13,7 +13,7 @@ export default function Auth() {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Login with Privy</h3>
-      <p className="text-sm text-slate-300 mb-5">
+      <p className="text-sm text-slate-300">
         メール、ウォレット、またはGoogleアカウントを使用してログインし、Semaphoreアイデンティティを管理します。
       </p>
 

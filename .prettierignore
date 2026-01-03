@@ -31,6 +31,9 @@ typechain-types
 # Claude generated assets
 .claude/
 
+# Git Submodules
+external
+
 # debug
 npm-debug.log*
 yarn-debug.log*

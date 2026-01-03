@@ -2,3 +2,6 @@
 	path = external/jpyc-sdk
 	url = https://github.com/jcam1/sdks.git
 	branch = develop
+[submodule "external/jpycv2"]
+	path = external/jpycv2
+	url = https://github.com/jcam1/JPYCv2.git

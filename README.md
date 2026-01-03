@@ -6,6 +6,13 @@
 
 [Vercel - Web App URL](https://jpyc-hackathon-2025-web-app.vercel.app/)
 
+## デプロイしたスマートコントラクト
+
+| コントラクト名 | アドレス                                                                                                                      | ブロックチェーン名 |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| JPYC           | [0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1](https://sepolia.basescan.org/address/0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1) | Base Sepolia       |
+| Semaphore      | [0x8A1fd199516489B0Fb7153EB5f075cDAC83c693D](https://sepolia.basescan.org/address/0x8A1fd199516489B0Fb7153EB5f075cDAC83c693D) | Base Sepolia       |
+
 ## 動かし方
 
 ### セットアップ
@@ -67,3 +74,49 @@
   ```bash
   yarn web-app run dev
   ```
+
+## 動かし方(JPYCv2編)
+
+未対応のブロックチェーンのテストネットで検証する場合には自分で**jpycv2**コントラクトをデプロイする必要がある
+
+`external/jpycv2`フォルダに移動して以下のことを行う
+
+### セットアップ
+
+```bash
+cp .env.example .env
+```
+
+```bash
+npm i
+```
+
+### デプロイ
+
+```bash
+npm run deploy -- --network baseSepolia
+```
+
+### 必要な権限を特定のアドレスに付与
+
+```bash
+npm run configure-minter -- --minter 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072 --allowance 1000000000000000000000000000 --network baseSepolia
+```
+
+### ミント
+
+```bash
+npm run mint -- --to 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072 --amount 1000 --network baseSepolia
+```
+
+### 送金
+
+```bash
+npm run transfer -- --to 0x1295BDc0C102EB105dC0198fdC193588fe66A1e4 --amount 5 --decimals 18 --network baseSepolia
+```
+
+### Burn
+
+```bash
+npm run burn -- --amount 100 --network baseSepolia
+```

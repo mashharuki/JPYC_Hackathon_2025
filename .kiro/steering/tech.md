@@ -9,18 +9,20 @@
 ## Core Technologies
 
 - **Language**: TypeScript（厳格な型安全性）
-- **Blockchain**: Ethereum互換チェーン（テストネット）
-- **Smart Contracts**: Solidity
-- **Frontend**: React / Next.js（予定）
-- **Wallet Integration**: Web3プロバイダー（MetaMask等）
+- **Blockchain**: Ethereum互換チェーン（Base Sepolia, Sepolia）
+- **Smart Contracts**: Solidity 0.8.23
+- **Frontend**: Next.js 16 (App Router)
+- **Wallet Integration**: Biconomy (Account Abstraction), Privy (Auth)
 - **Stablecoin**: JPYC（日本円建てステーブルコイン）
+- **Backend/State**: Supabase
 
 ## Key Libraries
 
-- **Zero-Knowledge Proof**: Semaphore（匿名性保証）
-- **Web3 SDK**: ethers.js / viem
-- **スマートコントラクト開発**: Hardhat / Foundry
-- **UI Framework**: TBD（React系を想定）
+- **Zero-Knowledge Proof**: Semaphore v4 (匿名性保証)
+- **Web3 SDK**: ethers.js v6 / viem
+- **Smart Contract Dev**: Hardhat
+- **UI Framework**: Tailwind CSS, Radix UI
+- **Testing**: Jest, React Testing Library, Hardhat Toolbox
 
 ## Development Standards
 
@@ -41,7 +43,8 @@
 - **テスト駆動開発（TDD）**: t-wadaさんの原則に沿った実装
 - 振る舞いをテスト（実装詳細ではなく）
 - カバレッジは指標、質の高いテストを重視
-- **スマートコントラクト**: 必ず単体テストを実装
+- **スマートコントラクト**: 必ず単体テストを実装 (`pkgs/contracts/test`)
+- **フロントエンド**: Jestによるコンポーネント/ロジックテスト (`pkgs/web-app`)
 - エラーケースも必ずカバー
 
 ## Development Environment
@@ -49,17 +52,22 @@
 ### Required Tools
 
 - Node.js 20+
-- pnpm / npm / yarn（依存関係管理）
-- Hardhat / Foundry（スマートコントラクト開発）
-- MetaMask（ウォレット）
+- Yarn (Package Manager)
+- Hardhat (Smart Contracts)
+- MetaMask (Wallet)
 
 ### Common Commands
 
 ```bash
-# Dev: npm run dev / pnpm dev
-# Build: npm run build / pnpm build
-# Test: npm test / pnpm test
-# Contract Deploy: npx hardhat run scripts/deploy.ts
+# Web App
+# Dev: cd pkgs/web-app && yarn dev
+# Build: cd pkgs/web-app && yarn build
+# Test: cd pkgs/web-app && yarn test
+
+# Contracts
+# Compile: cd pkgs/contracts && yarn compile
+# Test: cd pkgs/contracts && yarn test
+# Deploy: cd pkgs/contracts && yarn deploy --network baseSepolia
 ```
 
 ## Key Technical Decisions
@@ -71,8 +79,13 @@
 
 ### ブロックチェーン選定
 
-- Ethereum互換チェーン（テストネット）でMVP構築
-- ガス代・速度を考慮し、本番環境では Layer 2 も検討
+- **Base Sepolia**: 高速・低コストなL2テストネットとして採用
+- **Sepolia**: バックアップ/代替テストネット
+
+### ウォレット・認証
+
+- **Biconomy**: Account Abstractionによるガス代代行・UX向上
+- **Privy**: シームレスなソーシャルログイン・ウォレット作成
 
 ### セキュリティ
 

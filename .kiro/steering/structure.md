@@ -33,48 +33,52 @@
 - `CLAUDE.md`: Kiroワークフローの説明
 - `AGENTS.md`: Spec駆動開発 × TDD の共通ガイドライン
 
-### 今後追加予定のディレクトリ
+### 実装ディレクトリ
 
 #### スマートコントラクト
 
-**Location**: `/contracts/`
-**Purpose**: Solidityで記述されたスマートコントラクト
-**Example**: `contracts/SupportWallet.sol`, `contracts/SemaphoreIntegration.sol`
+**Location**: `pkgs/contracts/`
+**Purpose**: Solidityで記述されたスマートコントラクトとHardhat環境
+**Structure**:
+
+- `contracts/`: Solidityソースコード (`Feedback.sol` 等)
+- `test/`: コントラクトのテスト (`Feedback.test.ts` 等)
+- `tasks/`: Hardhatタスク (`deploy.ts` 等)
 
 #### フロントエンド
 
-**Location**: `/frontend/` または `/app/`
-**Purpose**: React/Next.js によるUI実装
-**Example**: `frontend/components/`, `frontend/pages/`
+**Location**: `pkgs/web-app/`
+**Purpose**: Next.js によるWebアプリケーション
+**Structure**:
 
-#### テスト
+- `src/app/`: App Router ページコンポーネント
+- `src/components/`: UIコンポーネント
+- `src/lib/`: ユーティリティ・ライブラリ設定
+- `supabase/`: Supabase関連ファイル
 
-**Location**: `/test/`
-**Purpose**: スマートコントラクト・フロントエンド・統合テスト
-**Example**: `test/SupportWallet.test.ts`
+#### 外部リソース
 
-#### デプロイスクリプト
-
-**Location**: `/scripts/`
-**Purpose**: スマートコントラクトのデプロイ・セットアップスクリプト
-**Example**: `scripts/deploy.ts`
+**Location**: `external/`
+**Purpose**: 外部SDKや参照用コントラクト
+**Example**: `jpyc-sdk/`, `jpycv2/`
 
 ## Naming Conventions
 
 - **Markdown Files**: kebab-case（`idea.md`, `design.md`）
 - **TypeScript Files**: PascalCase（コンポーネント・クラス）/ camelCase（関数・変数）
-- **Solidity Contracts**: PascalCase（`SupportWallet.sol`）
-- **Directories**: kebab-case または camelCase（`frontend/`, `smart-contracts/`）
+- **Solidity Contracts**: PascalCase（`Feedback.sol`）
+- **Directories**: kebab-case（`web-app/`, `contracts/`）
 
 ## Import Organization
 
 ```typescript
 // 外部ライブラリ
 import { ethers } from "ethers"
-import React from "react"
+import { useAccount } from "wagmi" // or other hooks
 
-// プロジェクト内モジュール（絶対パス）
-import { SupportWallet } from "@/contracts/SupportWallet"
+// プロジェクト内モジュール（絶対パス - Next.js）
+import { Button } from "@/components/ui/button"
+import { supabase } from "@/lib/supabase"
 
 // 相対パス（同階層・近接ファイル）
 import { formatAddress } from "./utils"
@@ -82,7 +86,7 @@ import { formatAddress } from "./utils"
 
 **Path Aliases**:
 
-- `@/`: プロジェクトルートにマッピング（予定）
+- `@/`: `src/` (Web App) にマッピング
 
 ## Code Organization Principles
 
@@ -104,9 +108,8 @@ import { formatAddress } from "./utils"
 
 ### テストの配置
 
-- スマートコントラクト: `/test/contracts/`
-- フロントエンド: `/test/frontend/`
-- 統合テスト: `/test/integration/`
+- スマートコントラクト: `pkgs/contracts/test/`
+- フロントエンド: `pkgs/web-app/__tests__/` または `pkgs/web-app/src/**/*.test.ts` (Jest)
 
 ---
 

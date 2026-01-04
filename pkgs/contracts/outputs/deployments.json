@@ -1,6 +1,5 @@
 {
-  "contracts": {
-    "Feedback": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+  "hardhat": {
     "SemaphoreVerifier": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
     "JPYCToken": "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1",
     "InnocentSupportWallet": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",

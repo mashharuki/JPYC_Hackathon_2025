@@ -2,10 +2,10 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers"
 import { Group, Identity, generateProof } from "@semaphore-protocol/core"
 import { expect } from "chai"
 import { encodeBytes32String } from "ethers"
-import { run } from "hardhat"
+import { ethers, run } from "hardhat"
 // @ts-ignore: typechain folder will be generated after contracts compilation
 // eslint-disable-next-line
-import { Feedback, ISemaphore } from "../typechain-types"
+import { ISemaphore } from "../typechain-types"
 
 /**
  * Feedbackコントラクトのユニットテストコード
@@ -22,10 +22,8 @@ describe("Feedback", () => {
 
     const semaphoreContract: ISemaphore = semaphore
 
-    const feedbackContract: Feedback = await run("deploy", {
-      logs: false,
-      semaphore: await semaphoreContract.getAddress()
-    })
+    const FeedbackFactory = await ethers.getContractFactory("Feedback")
+    const feedbackContract = await FeedbackFactory.deploy(await semaphoreContract.getAddress())
 
     const groupId = await feedbackContract.groupId()
 

@@ -132,7 +132,7 @@
 
 ### 5. Hardhat デプロイスクリプトの実装
 
-- [ ] 5.1 Base Sepolia デプロイスクリプトの作成
+- [x] 5.1 Base Sepolia デプロイスクリプトの作成
   - `tasks/deploy.ts` を作成
   - 環境変数から JPYC アドレス、MultiSig Owners、Semaphore Verifier アドレスを読み込み
   - Semaphore Verifier が未定義の場合、新規デプロイ（既存の場合は参照）
@@ -141,6 +141,7 @@
   - デプロイ後、すべてのアドレスを `deployments.json` に保存
   - コンソールに各コントラクトのアドレスを出力
   - _Requirements: 1, 10_
+  - _Completed: deploy タスクを Innocence Ledger 用に更新_
 
 - [ ] 5.2 (P) デプロイスクリプトの動作確認
   - Base Sepolia テストネットにデプロイを実行

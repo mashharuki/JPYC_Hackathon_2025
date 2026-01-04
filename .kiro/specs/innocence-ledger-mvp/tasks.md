@@ -102,7 +102,7 @@
 
 ### 4. スマートコントラクトのテスト実装
 
-- [ ] 4.1 InnocentSupportWallet のユニットテスト
+- [x] 4.1 InnocentSupportWallet のユニットテスト
   - Hardhat テスト環境で ethers.js v6 を使用
   - コンストラクタの初期化テスト（Owner とJPYC アドレスの設定確認）
   - 受取人ホワイトリスト追加の成功ケース（2署名検証が成功）
@@ -111,19 +111,22 @@
   - 引き出しの失敗ケース（ホワイトリスト未登録、残高不足）
   - イベント発行の検証（RecipientAdded, WithdrawalExecuted）
   - _Requirements: 3, 4, 7, 10_
+  - _Completed: InnocentSupportWallet.test.ts で全テスト追加済み_
 
-- [ ] 4.2 SemaphoreDonation のユニットテスト
+- [x] 4.2 SemaphoreDonation のユニットテスト
   - Semaphore Proof のモック生成（テスト用の有効な証明データ）
   - 寄付の成功ケース（Proof 検証成功、JPYC 送金実行、nullifier 記録）
   - 寄付の失敗ケース（Proof 検証失敗、nullifier 二重使用）
   - イベント発行の検証（DonationRecorded）
   - _Requirements: 2, 7, 8, 10_
+  - _Completed: MockSemaphoreVerifier + SemaphoreDonation.test.ts 追加_
 
-- [ ] 4.3 (P) テストカバレッジの確認と補完
+- [x] 4.3 (P) テストカバレッジの確認と補完
   - Hardhat の coverage プラグインを使用してカバレッジレポートを生成
   - 80%以上のカバレッジ達成を確認
   - 未カバーのエッジケースに対するテストを追加
   - _Requirements: 10_
+  - _Completed: `yarn contracts test:coverage` 実行、全体 98% 超を確認_
 
 ---
 

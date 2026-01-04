@@ -2,108 +2,111 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 
-/**
- * SemaphoreDonation コントラクトのユニットテストコード
- * TDD (Test-Driven Development) に従い、実装前にテストを作成
- */
 describe("SemaphoreDonation", () => {
-  /**
-   * デプロイ用フィクスチャ
-   * Semaphore Verifier、JPYC、MultiSig Wallet をモックとして用意
-   */
   async function deploySemaphoreDonationFixture() {
-    const [deployer, donor, walletOwner1, walletOwner2] = await ethers.getSigners()
+    const [deployer, donor, owner1, owner2] = await ethers.getSigners()
 
-    // Mock Semaphore Verifier をデプロイ
-    const MockVerifier = await ethers.getContractFactory("MockSemaphoreVerifier")
-    const mockVerifier = await MockVerifier.deploy()
+    const MockJPYCTokenFactory = await ethers.getContractFactory("MockJPYC")
+    const jpycToken = await MockJPYCTokenFactory.deploy()
 
-    // Mock JPYC トークンをデプロイ
-    const MockJPYC = await ethers.getContractFactory("MockJPYC")
-    const mockJPYC = await MockJPYC.deploy()
+    const MockSemaphoreVerifierFactory = await ethers.getContractFactory("MockSemaphoreVerifier")
+    const verifier = await MockSemaphoreVerifierFactory.deploy()
 
-    // Mock MultiSig Wallet アドレス（実際はウォレットコントラクトだが、ここではテスト用にアドレスのみ使用）
-    const mockWalletAddress = walletOwner1.address
+    const InnocentSupportWalletFactory = await ethers.getContractFactory("InnocentSupportWallet")
+    const wallet = await InnocentSupportWalletFactory.deploy(
+      [owner1.address, owner2.address],
+      await jpycToken.getAddress()
+    )
 
-    // SemaphoreDonation をデプロイ
-    const SemaphoreDonation = await ethers.getContractFactory("SemaphoreDonation")
-    const semaphoreDonation = await SemaphoreDonation.deploy(
-      await mockVerifier.getAddress(),
-      await mockJPYC.getAddress(),
-      mockWalletAddress
+    const SemaphoreDonationFactory = await ethers.getContractFactory("SemaphoreDonation")
+    const donation = await SemaphoreDonationFactory.deploy(
+      await verifier.getAddress(),
+      await jpycToken.getAddress(),
+      await wallet.getAddress()
     )
 
     return {
-      semaphoreDonation,
-      mockVerifier,
-      mockJPYC,
-      mockWalletAddress,
       deployer,
       donor,
-      walletOwner1,
-      walletOwner2
+      owner1,
+      owner2,
+      jpycToken,
+      verifier,
+      wallet,
+      donation
     }
   }
 
-  describe("getDonationByNullifier", () => {
-    it("should return donation record for a valid nullifier", async () => {
-      const { semaphoreDonation, mockVerifier, mockJPYC, mockWalletAddress, donor } =
-        await loadFixture(deploySemaphoreDonationFixture)
+  describe("# donateWithProof", () => {
+    it("Should record donation and transfer JPYC on valid proof", async () => {
+      const { donor, jpycToken, verifier, wallet, donation } = await loadFixture(deploySemaphoreDonationFixture)
 
-      // 1. 寄付トランザクションを実行してデータを準備
-      const donationAmount = ethers.parseUnits("100", 18) // 100 JPYC
-      const nullifier = 12345n
-      const merkleTreeRoot = 67890n
+      await verifier.setShouldVerify(true)
 
-      // Mock Verifier を常に true を返すように設定
-      await mockVerifier.setVerificationResult(true)
+      const amount = 1000n
+      const nullifier = 111n
+      const merkleTreeRoot = 222n
+      const proof: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]
 
-      // Donor に JPYC をミント
-      await mockJPYC.mint(donor.address, donationAmount)
+      await jpycToken.mint(donor.address, amount)
+      await jpycToken.connect(donor).approve(await donation.getAddress(), amount)
 
-      // Donor が SemaphoreDonation に approve
-      await mockJPYC.connect(donor).approve(await semaphoreDonation.getAddress(), donationAmount)
-
-      // Semaphore Proof をモック（実際の証明生成はフロントエンドで実施）
-      const mockProof: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [
-        1n,
-        2n,
-        3n,
-        4n,
-        5n,
-        6n,
-        7n,
-        8n
-      ]
-
-      // 寄付を実行
-      await semaphoreDonation
+      const tx = await donation
         .connect(donor)
-        .donateWithProof(merkleTreeRoot, nullifier, mockProof, mockWalletAddress, donationAmount)
+        .donateWithProof(merkleTreeRoot, nullifier, proof, await wallet.getAddress(), amount)
 
-      // 2. getDonationByNullifier を呼び出してデータを取得
-      const donationRecord = await semaphoreDonation.getDonationByNullifier(nullifier)
+      const block = await ethers.provider.getBlock("latest")
+      await expect(tx)
+        .to.emit(donation, "DonationRecorded")
+        .withArgs(nullifier, await wallet.getAddress(), amount, block!.timestamp)
 
-      // 3. 期待値との比較
-      expect(donationRecord.nullifier).to.equal(nullifier)
-      expect(donationRecord.amount).to.equal(donationAmount)
-      expect(donationRecord.walletAddress).to.equal(mockWalletAddress)
-      expect(donationRecord.timestamp).to.be.greaterThan(0) // タイムスタンプが設定されていることを確認
+      const record = await donation.donations(nullifier)
+      expect(record.amount).to.equal(amount)
+      expect(record.walletAddress).to.equal(await wallet.getAddress())
+      expect(record.nullifier).to.equal(nullifier)
+      expect(record.timestamp).to.equal(block!.timestamp)
+
+      expect(await donation.usedNullifiers(nullifier)).to.equal(true)
+      expect(await jpycToken.balanceOf(await wallet.getAddress())).to.equal(amount)
+      expect(await jpycToken.balanceOf(donor.address)).to.equal(0)
     })
 
-    it("should return zero values for non-existent nullifier", async () => {
-      const { semaphoreDonation } = await loadFixture(deploySemaphoreDonationFixture)
+    it("Should revert if proof verification fails", async () => {
+      const { donor, jpycToken, verifier, wallet, donation } = await loadFixture(deploySemaphoreDonationFixture)
 
-      const nonExistentNullifier = 99999n
+      await verifier.setShouldVerify(false)
 
-      // 存在しない nullifier を指定
-      const donationRecord = await semaphoreDonation.getDonationByNullifier(nonExistentNullifier)
+      const amount = 1000n
+      const nullifier = 123n
+      const merkleTreeRoot = 456n
+      const proof: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]
 
-      // デフォルト値が返されることを確認
-      expect(donationRecord.nullifier).to.equal(0n)
-      expect(donationRecord.amount).to.equal(0n)
-      expect(donationRecord.walletAddress).to.equal(ethers.ZeroAddress)
-      expect(donationRecord.timestamp).to.equal(0n)
+      await jpycToken.mint(donor.address, amount)
+      await jpycToken.connect(donor).approve(await donation.getAddress(), amount)
+
+      await expect(
+        donation.connect(donor).donateWithProof(merkleTreeRoot, nullifier, proof, await wallet.getAddress(), amount)
+      ).to.be.revertedWith("Invalid Semaphore proof")
+    })
+
+    it("Should revert if nullifier is already used", async () => {
+      const { donor, jpycToken, verifier, wallet, donation } = await loadFixture(deploySemaphoreDonationFixture)
+
+      await verifier.setShouldVerify(true)
+
+      const amount = 1000n
+      const nullifier = 999n
+      const merkleTreeRoot = 888n
+      const proof: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]
+
+      await jpycToken.mint(donor.address, amount * 2n)
+      await jpycToken.connect(donor).approve(await donation.getAddress(), amount * 2n)
+
+      await donation.connect(donor).donateWithProof(merkleTreeRoot, nullifier, proof, await wallet.getAddress(), amount)
+
+      await expect(
+        donation.connect(donor).donateWithProof(merkleTreeRoot, nullifier, proof, await wallet.getAddress(), amount)
+      ).to.be.revertedWith("Nullifier already used")
     })
   })
 })

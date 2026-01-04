@@ -143,7 +143,7 @@
   - _Requirements: 1, 10_
   - _Completed: deploy タスクを Innocence Ledger 用に更新_
 
-- [ ] 5.2 (P) デプロイスクリプトの動作確認
+- [x] 5.2 (P) デプロイスクリプトの動作確認
   - Base Sepolia テストネットにデプロイを実行
   - デプロイされたコントラクトアドレスを確認
   - Etherscan（Base Sepolia）でコントラクトのデプロイを検証
@@ -154,7 +154,7 @@
 
 ### 6. フロントエンドカスタムフックの実装
 
-- [ ] 6.1 (P) useJPYCBalance フックの実装
+- [x] 6.1 (P) useJPYCBalance フックの実装
   - viem の `getBalance` で ETH 残高を取得
   - viem の `readContract` で JPYC の `balanceOf` を呼び出し、JPYC 残高を取得
   - `watchBlockNumber` でブロック更新を監視し、新ブロック生成時に残高を自動更新

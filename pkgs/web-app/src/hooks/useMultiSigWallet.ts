@@ -1,39 +1,8 @@
+import { INNOCENT_SUPPORT_WALLET_ABI } from "@/utils/web3/abi"
 import { useCallback, useMemo, useState } from "react"
 import { createPublicClient, createWalletClient, custom, http } from "viem"
-import { baseSepolia } from "viem/chains"
 import { readContract } from "viem/actions"
-
-// InnocentSupportWallet ABI - 必要な関数のみ定義
-const INNOCENT_SUPPORT_WALLET_ABI = [
-  {
-    inputs: [{ name: "account", type: "address" }],
-    name: "isWhitelisted",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      { name: "recipient", type: "address" },
-      { name: "signatures", type: "bytes[]" },
-      { name: "nonce", type: "uint256" }
-    ],
-    name: "addRecipient",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { name: "recipient", type: "address" },
-      { name: "amount", type: "uint256" }
-    ],
-    name: "withdraw",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  }
-] as const
+import { baseSepolia } from "viem/chains"
 
 // EIP-712 ドメイン定義
 const EIP712_DOMAIN = {

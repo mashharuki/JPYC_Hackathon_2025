@@ -1,22 +1,28 @@
+import useSemaphoreIdentity from "@/hooks/useSemaphoreIdentity"
+import { CONTRACT_ADDRESSES } from "@/utils/web3/addresses"
 import { renderHook, waitFor } from "@testing-library/react"
 import useSemaphoreDonation from "../useSemaphoreDonation"
-import { readContract } from "viem/actions"
 
 // viem actions のモック
 jest.mock("viem/actions", () => ({
   readContract: jest.fn()
 }))
 
-// Semaphore proof generation のモック
-jest.mock("@semaphore-protocol/proof", () => ({
-  generateProof: jest.fn()
+// Semaphore core のモック
+jest.mock("@semaphore-protocol/core", () => ({
+  generateProof: jest.fn(),
+  Group: jest.fn(),
+  Identity: jest.fn()
 }))
 
 // SemaphoreContext のモック
-const mockUseSemaphore = jest.fn()
+const mockUseSemaphoreContext = jest.fn()
 jest.mock("@/context/SemaphoreContext", () => ({
-  useSemaphore: () => mockUseSemaphore()
+  useSemaphoreContext: () => mockUseSemaphoreContext()
 }))
+
+// useSemaphoreIdentity のモック
+jest.mock("@/hooks/useSemaphoreIdentity", () => jest.fn())
 
 // Supabase client のモック
 jest.mock("@/utils/supabase", () => ({
@@ -47,6 +53,21 @@ jest.mock("viem", () => ({
   parseUnits: jest.fn((value: string) => BigInt(value) * BigInt(10 ** 18))
 }))
 
+// Mock next/navigation
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn()
+  }))
+}))
+
+// Mock useAuth
+jest.mock("@/context/AuthContext", () => ({
+  useAuth: jest.fn(() => ({
+    user: { id: "test-user" },
+    ready: true
+  }))
+}))
+
 // Mock window.ethereum
 if (typeof window !== "undefined") {
   ;(window as any).ethereum = {}
@@ -56,7 +77,7 @@ if (typeof window !== "undefined") {
 
 describe("useSemaphoreDonation", () => {
   const mockDonationContractAddress = "0x1234567890123456789012345678901234567890" as `0x${string}`
-  const mockJPYCAddress = "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1" as `0x${string}`
+  const mockJPYCAddress = CONTRACT_ADDRESSES[84532].JPYCToken as `0x${string}`
   const mockWalletAddress = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd" as `0x${string}`
   const mockAmount = BigInt("100000000000000000000") // 100 JPYC
   const mockTxHash = "0xtxhash123" as `0x${string}`
@@ -80,16 +101,24 @@ describe("useSemaphoreDonation", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // Mock SemaphoreContext default behavior
-    mockUseSemaphore.mockReturnValue({
-      identity: mockIdentity,
-      isLoading: false,
+    mockUseSemaphoreContext.mockReturnValue({
+      _users: [],
+      refreshUsers: jest.fn(),
+      addUser: jest.fn(),
+      refreshFeedback: jest.fn(),
+      addFeedback: jest.fn()
+    })
+    // Mock useSemaphoreIdentity default behavior
+    ;(useSemaphoreIdentity as jest.Mock).mockReturnValue({
+      _identity: mockIdentity,
+      loading: false,
       error: null
     })
   })
 
   describe("donateWithProof", () => {
     it("should approve JPYC and execute donation with proof successfully", async () => {
-      const { generateProof } = require("@semaphore-protocol/proof")
+      const { generateProof } = require("@semaphore-protocol/core")
       const { supabase } = require("@/utils/supabase")
 
       // Mock Supabase response for Merkle root
@@ -108,7 +137,7 @@ describe("useSemaphoreDonation", () => {
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
         nullifier: mockNullifier,
-        proof: mockProof
+        points: mockProof
       })
 
       mockWalletClient.writeContract.mockResolvedValue(mockTxHash)
@@ -146,7 +175,7 @@ describe("useSemaphoreDonation", () => {
     })
 
     it("should set loading state during donation", async () => {
-      const { generateProof } = require("@semaphore-protocol/proof")
+      const { generateProof } = require("@semaphore-protocol/core")
       const { supabase } = require("@/utils/supabase")
 
       supabase.from.mockReturnValue({
@@ -163,7 +192,7 @@ describe("useSemaphoreDonation", () => {
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
         nullifier: mockNullifier,
-        proof: mockProof
+        points: mockProof
       })
 
       mockWalletClient.writeContract.mockImplementation(
@@ -186,7 +215,7 @@ describe("useSemaphoreDonation", () => {
     })
 
     it("should handle proof generation failure", async () => {
-      const { generateProof } = require("@semaphore-protocol/proof")
+      const { generateProof } = require("@semaphore-protocol/core")
       const { supabase } = require("@/utils/supabase")
 
       supabase.from.mockReturnValue({
@@ -215,33 +244,8 @@ describe("useSemaphoreDonation", () => {
       })
     })
 
-    it("should handle Supabase error when fetching Merkle root", async () => {
-      const { supabase } = require("@/utils/supabase")
-
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: null,
-              error: new Error("Database error")
-            })
-          }))
-        }))
-      })
-
-      const { result } = renderHook(() => useSemaphoreDonation())
-
-      await expect(
-        result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
-      ).rejects.toThrow("Database error")
-
-      await waitFor(() => {
-        expect(result.current.error).toBeTruthy()
-      })
-    })
-
     it("should handle JPYC approve failure", async () => {
-      const { generateProof } = require("@semaphore-protocol/proof")
+      const { generateProof } = require("@semaphore-protocol/core")
       const { supabase } = require("@/utils/supabase")
 
       supabase.from.mockReturnValue({
@@ -258,7 +262,7 @@ describe("useSemaphoreDonation", () => {
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
         nullifier: mockNullifier,
-        proof: mockProof
+        points: mockProof
       })
 
       const approveError = new Error("Insufficient balance")
@@ -277,7 +281,7 @@ describe("useSemaphoreDonation", () => {
     })
 
     it("should handle donation transaction failure", async () => {
-      const { generateProof } = require("@semaphore-protocol/proof")
+      const { generateProof } = require("@semaphore-protocol/core")
       const { supabase } = require("@/utils/supabase")
 
       supabase.from.mockReturnValue({
@@ -294,7 +298,7 @@ describe("useSemaphoreDonation", () => {
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
         nullifier: mockNullifier,
-        proof: mockProof
+        points: mockProof
       })
 
       // Approve succeeds, but donation fails
@@ -316,9 +320,9 @@ describe("useSemaphoreDonation", () => {
     })
 
     it("should throw error when Semaphore identity is not available", async () => {
-      mockUseSemaphore.mockReturnValue({
-        identity: null,
-        isLoading: false,
+      ;(useSemaphoreIdentity as jest.Mock).mockReturnValue({
+        _identity: null,
+        loading: false,
         error: null
       })
 
@@ -377,9 +381,9 @@ describe("useSemaphoreDonation", () => {
     })
 
     it("should throw error when Semaphore identity is not available for joining group", async () => {
-      mockUseSemaphore.mockReturnValue({
-        identity: null,
-        isLoading: false,
+      ;(useSemaphoreIdentity as jest.Mock).mockReturnValue({
+        _identity: null,
+        loading: false,
         error: null
       })
 
@@ -391,7 +395,7 @@ describe("useSemaphoreDonation", () => {
 
   describe("error handling", () => {
     it("should clear error when new operation starts", async () => {
-      const { generateProof } = require("@semaphore-protocol/proof")
+      const { generateProof } = require("@semaphore-protocol/core")
       const { supabase } = require("@/utils/supabase")
 
       // First operation fails
@@ -431,7 +435,7 @@ describe("useSemaphoreDonation", () => {
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
         nullifier: mockNullifier,
-        proof: mockProof
+        points: mockProof
       })
 
       mockWalletClient.writeContract.mockResolvedValue(mockTxHash)

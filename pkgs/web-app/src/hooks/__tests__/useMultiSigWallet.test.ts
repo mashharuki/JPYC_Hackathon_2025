@@ -1,6 +1,6 @@
-import { renderHook, waitFor } from "@testing-library/react"
-import useMultiSigWallet from "../useMultiSigWallet"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { readContract } from "viem/actions"
+import useMultiSigWallet from "../useMultiSigWallet"
 
 // viem actions のモック
 jest.mock("viem/actions", () => ({
@@ -46,7 +46,10 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      const isWhitelisted = await result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)
+      let isWhitelisted
+      await act(async () => {
+        isWhitelisted = await result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)
+      })
 
       expect(isWhitelisted).toBe(true)
       expect(readContract).toHaveBeenCalledWith(
@@ -61,10 +64,11 @@ describe("useMultiSigWallet", () => {
 
     it("should return false when recipient is not whitelisted", async () => {
       ;(readContract as jest.Mock).mockResolvedValue(false)
-
       const { result } = renderHook(() => useMultiSigWallet())
-
-      const isWhitelisted = await result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)
+      let isWhitelisted
+      await act(async () => {
+        isWhitelisted = await result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)
+      })
 
       expect(isWhitelisted).toBe(false)
     })
@@ -75,9 +79,11 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await expect(result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)).rejects.toThrow(
-        "Network error"
-      )
+      await act(async () => {
+        await expect(result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)).rejects.toThrow(
+          "Network error"
+        )
+      })
     })
   })
 
@@ -95,7 +101,10 @@ describe("useMultiSigWallet", () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const txHash = await result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)
+      let txHash
+      await act(async () => {
+        txHash = await result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)
+      })
 
       expect(txHash).toBe(mockTxHash)
       expect(mockWalletClient.signTypedData).toHaveBeenCalledTimes(2)
@@ -116,13 +125,18 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      const addRecipientPromise = result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)
+      let addRecipientPromise
+      await act(async () => {
+        addRecipientPromise = result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)
+      })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(true)
       })
 
-      await addRecipientPromise
+      await act(async () => {
+        await addRecipientPromise
+      })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -135,9 +149,11 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await expect(result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)).rejects.toThrow(
-        "User rejected signature"
-      )
+      await act(async () => {
+        await expect(result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)).rejects.toThrow(
+          "User rejected signature"
+        )
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -152,9 +168,11 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await expect(result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)).rejects.toThrow(
-        "Transaction reverted"
-      )
+      await act(async () => {
+        await expect(result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)).rejects.toThrow(
+          "Transaction reverted"
+        )
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -169,7 +187,10 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      const txHash = await result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)
+      let txHash
+      await act(async () => {
+        txHash = await result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)
+      })
 
       expect(txHash).toBe(mockTxHash)
       expect(mockWalletClient.writeContract).toHaveBeenCalledWith(
@@ -188,13 +209,18 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      const withdrawPromise = result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)
+      let withdrawPromise
+      await act(async () => {
+        withdrawPromise = result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)
+      })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(true)
       })
 
-      await withdrawPromise
+      await act(async () => {
+        await withdrawPromise
+      })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -207,9 +233,11 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await expect(result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)).rejects.toThrow(
-        "Caller not whitelisted"
-      )
+      await act(async () => {
+        await expect(result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)).rejects.toThrow(
+          "Caller not whitelisted"
+        )
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -223,9 +251,11 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await expect(result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)).rejects.toThrow(
-        "Insufficient JPYC balance"
-      )
+      await act(async () => {
+        await expect(result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)).rejects.toThrow(
+          "Insufficient JPYC balance"
+        )
+      })
     })
   })
 
@@ -236,7 +266,9 @@ describe("useMultiSigWallet", () => {
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await expect(result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)).rejects.toThrow()
+      await act(async () => {
+        await expect(result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)).rejects.toThrow()
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -245,7 +277,9 @@ describe("useMultiSigWallet", () => {
       // Second operation succeeds
       ;(readContract as jest.Mock).mockResolvedValue(true)
 
-      await result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)
+      await act(async () => {
+        await result.current.isWhitelisted(mockWalletAddress, mockRecipientAddress)
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeNull()

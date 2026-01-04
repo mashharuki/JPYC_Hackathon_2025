@@ -15920,6 +15920,7 @@ __metadata:
     typescript: "npm:^5"
     viem: "npm:^2.43.4"
     whatwg-fetch: "npm:^3.6.20"
+    zod: "npm:^3.24.1"
   languageName: unknown
   linkType: soft
 
@@ -21725,7 +21726,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.24.2, zod@npm:^3.24.3, zod@npm:^3.24.4":
+"zod@npm:^3.24.1, zod@npm:^3.24.2, zod@npm:^3.24.3, zod@npm:^3.24.4":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10/f0c963ec40cd96858451d1690404d603d36507c1fc9682f2dae59ab38b578687d542708a7fdbf645f77926f78c9ed558f57c3d3aa226c285f798df0c4da16995

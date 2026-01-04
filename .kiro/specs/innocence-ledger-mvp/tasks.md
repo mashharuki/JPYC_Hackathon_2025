@@ -188,7 +188,7 @@
 
 ### 7. Next.js API Routes の実装
 
-- [ ] 7.1 (P) ケース作成 API の実装
+- [x] 7.1 (P) ケース作成 API の実装
   - `app/api/cases/route.ts` に POST エンドポイントを実装
   - リクエストボディから title, description, goalAmount, walletAddress, semaphoreGroupId を受け取る
   - Zod スキーマでリクエストデータを検証
@@ -196,28 +196,32 @@
   - 成功時、ケース ID と作成日時を返す
   - エラーハンドリング（Supabase エラー、バリデーションエラー）
   - _Requirements: 1, 6, 9_
+  - _Completed: POST API + Zod 追加_
 
-- [ ] 7.2 (P) ケース取得 API の実装
+- [x] 7.2 (P) ケース取得 API の実装
   - `app/api/cases/route.ts` に GET エンドポイントを実装
   - Supabase Client ですべてのケース情報を取得
   - レスポンスを Zod スキーマで検証
   - ケース配列を JSON 形式で返す
   - _Requirements: 6, 9_
+  - _Completed: GET API + レスポンスZod検証追加_
 
-- [ ] 7.3 (P) ケース詳細取得 API の実装
+- [x] 7.3 (P) ケース詳細取得 API の実装
   - `app/api/cases/[id]/route.ts` に GET エンドポイントを実装
   - パスパラメータからケース ID を取得
   - Supabase Client で特定ケースの詳細情報を取得
   - ケースが見つからない場合、404 エラーを返す
   - _Requirements: 6, 9_
+  - _Completed: GET /api/cases/[id] 実装_
 
-- [ ] 7.4 (P) ケース更新 API の実装
+- [x] 7.4 (P) ケース更新 API の実装
   - `app/api/cases/[id]/route.ts` に PATCH エンドポイントを実装
   - リクエストボディから currentAmount を受け取る
   - Supabase Client でケースの現在調達額を更新
   - updated_at タイムスタンプを更新
   - 更新成功時、更新後のケース情報を返す
   - _Requirements: 6, 9_
+  - _Completed: PATCH /api/cases/[id] 実装_
 
 ---
 

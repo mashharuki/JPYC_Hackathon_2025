@@ -1,21 +1,12 @@
+import { JPYC_ABI } from "@/utils/web3/abi"
+import { CONTRACT_ADDRESSES } from "@/utils/web3/addresses"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { createPublicClient, http, isAddress } from "viem"
-import { baseSepolia } from "viem/chains"
 import { getBalance, readContract, watchBlockNumber } from "viem/actions"
-
-// JPYC ERC20 ABI - balanceOf method のみ定義
-const JPYC_ABI = [
-  {
-    constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "balance", type: "uint256" }],
-    type: "function"
-  }
-] as const
+import { baseSepolia } from "viem/chains"
 
 // Base Sepolia の JPYC Token Address
-const JPYC_TOKEN_ADDRESS = "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1" as `0x${string}`
+const JPYC_TOKEN_ADDRESS = CONTRACT_ADDRESSES[84532].JPYCToken as `0x${string}`
 
 /**
  * Hook の返り値の型定義

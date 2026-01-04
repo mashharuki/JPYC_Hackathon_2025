@@ -1,7 +1,7 @@
-import { renderHook, waitFor } from "@testing-library/react"
-import useJPYCBalance from "../useJPYCBalance"
-import { getBalance, readContract, watchBlockNumber } from "viem/actions"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { isAddress } from "viem"
+import { getBalance, readContract, watchBlockNumber } from "viem/actions"
+import useJPYCBalance from "../useJPYCBalance"
 
 // viem actions のモック
 jest.mock("viem/actions", () => ({
@@ -103,7 +103,9 @@ describe("useJPYCBalance", () => {
     ;(readContract as jest.Mock).mockResolvedValue(newJPYCBalance)
 
     // Call refetch
-    await result.current.refetch()
+    await act(async () => {
+      await result.current.refetch()
+    })
 
     await waitFor(() => {
       expect(result.current.ethBalance).toBe(newETHBalance)
@@ -139,7 +141,9 @@ describe("useJPYCBalance", () => {
 
     // Simulate new block
     if (blockCallback) {
-      blockCallback(BigInt(123456))
+      await act(async () => {
+        blockCallback!(BigInt(123456))
+      })
     }
 
     await waitFor(() => {

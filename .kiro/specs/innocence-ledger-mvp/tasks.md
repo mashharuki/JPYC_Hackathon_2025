@@ -40,11 +40,12 @@
 
 ### 2. InnocentSupportWallet スマートコントラクトの実装
 
-- [ ] 2.1 MultiSig Wallet のコア機能実装
+- [x] 2.1 MultiSig Wallet のコア機能実装
   - OpenZeppelin の EIP712 と ECDSA ライブラリをインポート
   - コンストラクタで2人の Owner アドレスと JPYC トークンアドレスを受け取り、状態変数に保存
   - 受取人ホワイトリスト（mapping(address => bool)）と nonce 管理（mapping(uint256 => bool)）を実装
   - _Requirements: 1, 3, 7_
+  - _Completed: InnocentSupportWallet.sol および InnocentSupportWallet.test.ts 作成完了、全テスト成功（9 passing）_
 
 - [ ] 2.2 受取人ホワイトリスト追加機能の実装
   - `addRecipient(address recipient, bytes[] signatures, uint256 nonce)` 関数を実装

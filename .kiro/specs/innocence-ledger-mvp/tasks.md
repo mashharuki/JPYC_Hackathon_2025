@@ -80,7 +80,7 @@
 
 ### 3. SemaphoreDonation スマートコントラクトの実装
 
-- [ ] 3.1 Semaphore 証明検証と寄付機能の実装
+- [x] 3.1 Semaphore 証明検証と寄付機能の実装
   - Semaphore Verifier、JPYC、InnocentSupportWallet のアドレスをコンストラクタで受け取る
   - `donateWithProof(uint256 merkleTreeRoot, uint256 nullifier, uint256[8] proof, address walletAddress, uint256 amount)` 関数を実装
   - Semaphore Verifier の `verifyProof` を呼び出して証明を検証
@@ -90,6 +90,7 @@
   - 寄付記録を `donations` マッピングに保存
   - `DonationRecorded` イベントを発行
   - _Requirements: 2, 7, 8_
+  - _Completed: SemaphoreDonation.sol 追加、Verifier 検証 + JPYC 送金 + 寄付記録_
 
 - [ ] 3.2 寄付履歴取得機能の実装
   - `getDonationByNullifier(uint256 nullifier)` view 関数を実装

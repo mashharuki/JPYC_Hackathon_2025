@@ -27,13 +27,14 @@
   - Hardhat の `hardhat.config.ts` に Base Sepolia ネットワーク設定を追加
   - _Requirements: 10_
 
-- [ ] 1.2 (P) Supabase データベーススキーマの作成
+- [x] 1.2 (P) Supabase データベーススキーマの作成
   - `cases` テーブルのマイグレーションファイルを作成（`supabase/migrations/YYYYMMDDHHMMSS_create_cases_table.sql`）
   - カラム: id (UUID), title (TEXT), description (TEXT), goal_amount (BIGINT), current_amount (BIGINT), wallet_address (TEXT), semaphore_group_id (TEXT), created_at, updated_at
   - UNIQUE 制約: wallet_address, semaphore_group_id
   - インデックス: wallet_address, semaphore_group_id
   - ローカル環境でマイグレーションを実行してテスト
   - _Requirements: 1, 6_
+  - _Completed: マイグレーションファイル作成済み (`pkgs/web-app/supabase/migrations/20260104000000_create_cases_table.sql`)、スキーマ検証テスト作成済み (`pkgs/web-app/src/utils/__tests__/casesTableSchema.test.ts`)_
 
 ---
 

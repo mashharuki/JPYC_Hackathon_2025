@@ -163,7 +163,7 @@
   - `ethBalance`, `jpycBalance`, `refetch`, `isLoading`, `error` を返す
   - _Requirements: 5, 8, 9_
 
-- [ ] 6.2 useMultiSigWallet フックの実装
+- [x] 6.2 useMultiSigWallet フックの実装
   - viem の `writeContract` で InnocentSupportWallet の `addRecipient` を呼び出し
   - EIP-712 署名を `signTypedData` で生成（2人の Owner が順次署名）
   - 2署名収集フロー（Owner 1 が署名を作成、Owner 2 が署名を追加して最終実行）
@@ -173,7 +173,7 @@
   - `addRecipient`, `withdraw`, `isWhitelisted`, `isLoading`, `error` を返す
   - _Requirements: 3, 4, 9_
 
-- [ ] 6.3 useSemaphoreDonation フックの実装
+- [x] 6.3 useSemaphoreDonation フックの実装
   - SemaphoreContext から Identity を取得
   - `@semaphore-protocol/proof` ライブラリで Semaphore Proof を生成
   - Supabase から最新の Merkle Root を取得
@@ -182,6 +182,7 @@
   - Proof 生成中のローディング状態を管理
   - `donateWithProof`, `joinGroup`, `isLoading`, `error` を返す
   - _Requirements: 2, 8, 9_
+  - _Completed: useSemaphoreDonation.ts および useSemaphoreDonation.test.ts 作成完了、全11テスト成功、全66テスト成功_
 
 ---
 

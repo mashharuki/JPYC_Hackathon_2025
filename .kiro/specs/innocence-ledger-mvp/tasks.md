@@ -92,10 +92,11 @@
   - _Requirements: 2, 7, 8_
   - _Completed: SemaphoreDonation.sol 追加、Verifier 検証 + JPYC 送金 + 寄付記録_
 
-- [ ] 3.2 寄付履歴取得機能の実装
+- [x] 3.2 寄付履歴取得機能の実装
   - `getDonationByNullifier(uint256 nullifier)` view 関数を実装
   - nullifier に対応する寄付記録（金額、タイムスタンプ、ウォレットアドレス）を返す
   - _Requirements: 2, 6_
+  - _Completed: `getDonationByNullifier` view関数を実装、テスト作成完了（`test/SemaphoreDonation.test.ts`）、全テスト成功（40 passing）_
 
 ---
 

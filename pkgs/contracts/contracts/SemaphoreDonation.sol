@@ -94,6 +94,15 @@ contract SemaphoreDonation {
     emit DonationRecorded(nullifier, walletAddress_, amount, block.timestamp);
   }
 
+  /**
+   * @dev nullifier に対応する寄付記録を取得
+   * @param nullifier 寄付時に使用された nullifier
+   * @return 寄付記録（nullifier, amount, timestamp, walletAddress）
+   */
+  function getDonationByNullifier(uint256 nullifier) external view returns (DonationRecord memory) {
+    return donations[nullifier];
+  }
+
   function _hash(uint256 message) private pure returns (uint256) {
     return uint256(keccak256(abi.encodePacked(message))) >> 8;
   }

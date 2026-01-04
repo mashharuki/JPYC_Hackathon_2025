@@ -10,7 +10,7 @@
 
 ### システム構成図
 
-./docs/overview.drawioに存在
+./docs/overview.drawio
 
 ### コンセプト
 

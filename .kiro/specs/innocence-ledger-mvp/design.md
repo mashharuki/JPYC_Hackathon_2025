@@ -158,7 +158,8 @@ graph TB
 
 **Rationale**:
 
-- **viem**: フロントエンドの標準ライブラリとして、バンドルサイズが小さく、TypeScript 型安全性が高い
+- **viem**: フロントエンドの標準ライブラリとして、バンドルサイズが小さく、TypeScript 型安全性が高い。**フロントエンドコード（カスタムフック、コンポーネント）ではviemのみを使用**し、ethers.jsは使用しない。
+- **ethers.js v6**: Hardhatテスト環境およびデプロイスクリプトでのみ使用。Hardhatエコシステムとの統合が容易であり、既存のテストパターンを再利用可能。**フロントエンドとバックエンドテストの境界を明確化**し、型の不整合を防ぐため、ABIの型生成は各環境で独立して実施（Hardhat: typechain-ethers、フロントエンド: viemのABI型定義）。
 - **Semaphore v4**: 既存のフィードバック機能と同じバージョンを使用し、グループ管理ロジックを再利用
 - **OpenZeppelin 5.x**: Solidity 0.8.23 に対応し、EIP712 + ECDSA のユーティリティを提供
 - **JPYC**: Base Sepolia でテスト可能な円建てステーブルコイン（プロダクションアドレス確定済み）
@@ -265,6 +266,80 @@ sequenceDiagram
 - EIP-712 型付き署名により、署名対象データ（受取人アドレス、nonce、ドメインセパレーター）を明確化
 - OpenZeppelin の `ECDSA.recover` により、署名者のアドレスを復元し、Owner リストと照合
 - 2署名の順序検証（`signer1 < signer2`）により、重複署名を排除
+
+---
+
+## Deployment Strategy
+
+### Contract Deployment Order
+
+スマートコントラクトのデプロイは、以下の順序で実施します。各コントラクトは依存関係を持つため、順序を遵守する必要があります。
+
+**Phase 1: Semaphore Verifier の準備**
+
+1. **Semaphore Verifier のデプロイまたは既存アドレスの参照**
+   - Semaphore v4の公式Verifierコントラクトが Base Sepolia にデプロイ済みの場合、そのアドレスを使用
+   - 未デプロイの場合、`@semaphore-protocol/contracts` から Verifier をデプロイ
+   - デプロイ後、Verifier アドレスを `.env` に保存（`SEMAPHORE_VERIFIER_ADDRESS`）
+
+**Phase 2: InnocentSupportWallet のデプロイ**
+
+2. **InnocentSupportWallet コントラクトのデプロイ**
+   - コンストラクタ引数:
+     - `address[] memory _owners`: MultiSig Owner の配列（弁護士・親族のアドレス、`.env` から読み込み）
+     - `address _jpycTokenAddress`: JPYC ERC20 トークンアドレス（Base Sepolia: `0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1`）
+   - デプロイ後、Wallet アドレスを `.env` に保存（`INNOCENT_SUPPORT_WALLET_ADDRESS`）
+
+**Phase 3: SemaphoreDonation のデプロイ**
+
+3. **SemaphoreDonation コントラクトのデプロイ**
+   - コンストラクタ引数:
+     - `address _verifierAddress`: Phase 1 でデプロイまたは参照した Semaphore Verifier アドレス
+     - `address _jpycTokenAddress`: JPYC ERC20 トークンアドレス
+     - `address _walletAddress`: Phase 2 でデプロイした InnocentSupportWallet アドレス
+   - デプロイ後、SemaphoreDonation アドレスを `.env` に保存（`SEMAPHORE_DONATION_ADDRESS`）
+
+**既存 Feedback.sol との共存**
+
+- 既存の `Feedback.sol` コントラクトは独立して保持し、Semaphore Verifier を共有する形で統合
+- Feedback 機能と Innocence Ledger 機能は、フロントエンドのルーティングで分離（例: `/feedback`, `/cases`）
+
+### Hardhat Deploy Script 仕様
+
+**ファイルパス**: `pkgs/contracts/tasks/deploy.ts`
+
+**環境変数（`.env`）**:
+
+```env
+# Base Sepolia RPC
+BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+PRIVATE_KEY=0x...
+
+# JPYC Token Address (Base Sepolia)
+JPYC_TOKEN_ADDRESS=0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1
+
+# MultiSig Owners (comma-separated)
+MULTISIG_OWNER_1=0x...
+MULTISIG_OWNER_2=0x...
+
+# Semaphore Verifier (optional - if already deployed)
+SEMAPHORE_VERIFIER_ADDRESS=0x...
+```
+
+**デプロイスクリプト実装方針**:
+
+1. 環境変数から JPYC アドレス、MultiSig Owners アドレスを読み込み
+2. Semaphore Verifier が `.env` に定義されている場合はそのアドレスを使用、未定義の場合は新規デプロイ
+3. InnocentSupportWallet をデプロイし、アドレスをコンソールに出力
+4. SemaphoreDonation をデプロイし、アドレスをコンソールに出力
+5. デプロイ完了後、すべてのアドレスを `deployments.json` に保存し、フロントエンドで参照可能にする
+
+**実行コマンド**:
+
+```bash
+cd pkgs/contracts
+yarn deploy --network baseSepolia
+```
 
 ---
 
@@ -528,6 +603,11 @@ interface IDonationService {
 **Implementation Notes**
 
 - **Integration**: `createContext` と `useContext` で Context を実装。`useEffect` で Supabase からケースデータを取得し、状態を初期化。トランザクション実行時は、useBiconomy フックを使用してガスレス実行。
+- **API Implementation**: ケース作成・更新機能は **Next.js API Routes** で実装（`app/api/cases/route.ts`）。Supabase Client を使用してデータベース操作を実行し、フロントエンドからはfetch APIで呼び出す。以下のエンドポイントを実装：
+  - `POST /api/cases`: 新規ケース作成（MultiSig Wallet アドレス、Semaphore Group ID、タイトル、説明、目標金額を受け取り、Supabase `cases` テーブルに挿入）
+  - `GET /api/cases`: すべてのケース情報を取得
+  - `GET /api/cases/[id]`: 特定ケースの詳細情報を取得
+  - `PATCH /api/cases/[id]`: ケース情報の更新（寄付額の更新等）
 - **Validation**: ケースデータの取得時、Supabase のレスポンスを Zod スキーマで検証し、型安全性を確保。トランザクション実行前、ユーザー入力（金額、アドレス）をバリデーション。
 - **Risks**: Supabase との通信エラーが発生した場合、エラーステートを設定し、再試行ボタンを表示。トランザクション失敗時、revert reason を解析してユーザーフレンドリーなエラーメッセージを表示。
 
@@ -891,10 +971,10 @@ mapping(uint256 => bool) public usedNullifiers;
 
 ### Data Contracts & Integration
 
-**API Data Transfer (Supabase RPC)**:
+**API Data Transfer (Next.js API Routes)**:
 
 ```typescript
-// ケース作成 API
+// ケース作成 API (POST /api/cases)
 interface CreateCaseRequest {
   title: string
   description: string
@@ -906,6 +986,27 @@ interface CreateCaseRequest {
 interface CreateCaseResponse {
   id: string
   createdAt: string
+}
+
+// ケース取得 API (GET /api/cases)
+interface GetCasesResponse {
+  cases: Array<{
+    id: string
+    title: string
+    description: string
+    goalAmount: string
+    currentAmount: string
+    walletAddress: `0x${string}`
+    semaphoreGroupId: string
+    createdAt: string
+    updatedAt: string
+  }>
+}
+
+// ケース更新 API (PATCH /api/cases/[id])
+interface UpdateCaseRequest {
+  currentAmount?: string
+  updatedAt?: string
 }
 ```
 

@@ -1,9 +1,9 @@
 {
   "feature_name": "innocence-ledger-mvp",
   "created_at": "2026-01-04T00:00:00Z",
-  "updated_at": "2026-01-04T12:00:00Z",
+  "updated_at": "2026-01-04T14:00:00Z",
   "language": "ja",
-  "phase": "design-generated",
+  "phase": "design-approved",
   "approvals": {
     "requirements": {
       "generated": true,
@@ -11,7 +11,7 @@
     },
     "design": {
       "generated": true,
-      "approved": false
+      "approved": true
     },
     "tasks": {
       "generated": false,

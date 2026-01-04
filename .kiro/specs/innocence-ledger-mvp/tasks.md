@@ -269,7 +269,7 @@
   - _Requirements: 2, 9_
   - _Completed: DonationForm 実装 + 依存追加_
 
-- [ ] 9.3 (P) WithdrawalForm コンポーネントの実装
+- [x] 9.3 (P) WithdrawalForm コンポーネントの実装
   - React Hook Form で引き出し額入力フォームを実装
   - Zod スキーマで引き出し額をバリデーション（最小額、MultiSig Wallet 残高チェック）
   - CaseContext から `requestWithdrawal` を呼び出し
@@ -277,14 +277,16 @@
   - トランザクションステータスを表示
   - エラーメッセージの表示（残高不足、ホワイトリスト未登録等）
   - _Requirements: 4, 9_
+  - _Completed: WithdrawalForm 実装_
 
-- [ ] 9.4 (P) BalanceDisplay コンポーネントの実装
+- [x] 9.4 (P) BalanceDisplay コンポーネントの実装
   - useJPYCBalance フックから ETH および JPYC 残高を取得
   - `formatUnits` で18桁精度をフォーマット（例: "100.50 JPYC"）
   - 残高が undefined の場合、ローディング状態を表示
   - ネットワーク接続エラー時、エラーメッセージと再試行ボタンを表示
   - MultiSig Wallet の残高を表示する場合、Wallet アドレスを引数として受け取る
   - _Requirements: 5_
+  - _Completed: BalanceDisplay 実装_
 
 - [ ] 9.5 (P) 全体的なUIコンポーネントのアップグレード
   - 良いUI/UX の原則に従い、全体的なUIコンポーネントのアップグレードを行いフロントエンドデザインを最適化すること

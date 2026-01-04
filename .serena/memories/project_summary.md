@@ -24,9 +24,11 @@
 - **Language**: Solidity (^0.8.23), TypeScript
 - **Key Contracts**:
   - `Feedback.sol`: Implements Semaphore protocol for anonymous feedback/voting. Manages group creation, membership, and proof verification.
+  - `InnocentSupportWallet.sol`: MultiSig wallet for fund management, whitelist management, and withdrawal functionality. Designed for 2 owners (e.g., lawyer and family) to manage JPYC funds transparently.
 - **Libraries**:
   - `@semaphore-protocol/contracts`: Privacy layer.
   - `poseidon-solidity`: Hashing for ZK proofs.
+  - `@openzeppelin/contracts`: Standard secure contract components (EIP712, ECDSA).
 - **Network**: Base Sepolia (Target)
 
 ### Web App (`pkgs/web-app`)
@@ -45,7 +47,10 @@
 
 ## Current Implementation Status
 
-- **Contracts**: Basic `Feedback` contract implemented with Semaphore integration. Deployment scripts target Base Sepolia.
+- **Contracts**:
+  - `Feedback.sol`: Basic contract implemented with Semaphore integration.
+  - `InnocentSupportWallet.sol`: Implemented with MultiSig logic (2 owners), whitelist management, and JPYC integration. Unit tests (`InnocentSupportWallet.test.ts`) are implemented and passing.
+  - Deployment scripts target Base Sepolia.
 - **Frontend**:
   - Next.js app structure set up with App Router.
   - Authentication provider (`AuthProvider`) implemented using Privy.

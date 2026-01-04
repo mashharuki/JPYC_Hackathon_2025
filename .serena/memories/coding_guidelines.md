@@ -7,6 +7,13 @@
 - **Activation**: Always activate the project.
 - **Onboarding**: Ensure onboarding is performed.
 
+## Spec-Driven Development Workflow
+
+- **Phases**: Follow the cycle: Requirements -> Design -> Tasks -> Implementation.
+- **Approvals**: Human review is required at each phase (Requirements, Design, Tasks) before moving to the next.
+- **Status**: Keep steering documents updated and check `/kiro:spec-status` for consistency.
+- **Spec Language**: All content written to project files (requirements.md, design.md, tasks.md, etc.) must be in the target language specified in `spec.json` (currently **Japanese**).
+
 ## Development Philosophy
 
 - **Quality**: Balance working code with quality, maintainability, and safety.
@@ -44,8 +51,7 @@
 
 ## Git Workflow
 
-- **Conventional Commits**: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`.
-- **Atomic Commits**: Focus on a single change.
+- **Conventional Commits**: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`.\n- **Atomic Commits**: Focus on a single change.
 - **Messages**: Clear, descriptive messages in **English**.
 
 ## Tech Stack Specifics

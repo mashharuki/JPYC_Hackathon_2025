@@ -250,15 +250,16 @@
 
 ### 9. UIコンポーネントの実装
 
-- [ ] 9.1 (P) CaseDashboard コンポーネントの実装
+- [x] 9.1 (P) CaseDashboard コンポーネントの実装
   - Server Component として実装し、初期データを Supabase から取得
   - すべてのアクティブなケース情報を一覧表示
   - 各ケースの調達進捗率をプログレスバーで視覚化
   - ケース詳細ページへのナビゲーションリンクを実装
   - Client Component でフィルタ・ソート機能を実装
   - _Requirements: 6_
+  - _Completed: CaseDashboard Server/Client 実装 + /cases ページ追加_
 
-- [ ] 9.2 (P) DonationForm コンポーネントの実装
+- [x] 9.2 (P) DonationForm コンポーネントの実装
   - React Hook Form で寄付額入力フォームを実装
   - Zod スキーマで寄付額をバリデーション（最小額、JPYC 残高チェック）
   - CaseContext から `submitDonation` を呼び出し
@@ -266,6 +267,7 @@
   - トランザクションステータス（Pending, Success, Failed）を表示
   - エラーメッセージの表示（残高不足、Proof 検証失敗等）
   - _Requirements: 2, 9_
+  - _Completed: DonationForm 実装 + 依存追加_
 
 - [ ] 9.3 (P) WithdrawalForm コンポーネントの実装
   - React Hook Form で引き出し額入力フォームを実装

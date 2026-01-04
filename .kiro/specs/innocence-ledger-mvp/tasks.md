@@ -21,7 +21,7 @@
 
 ### 1. プロジェクト環境セットアップ
 
-- [ ] 1.1 (P) 環境変数とネットワーク設定の構成
+- [x] 1.1 (P) 環境変数とネットワーク設定の構成
   - Base Sepolia RPC URL、プライベートキー、JPYC トークンアドレスを `.env` に設定
   - MultiSig Owner の2つのアドレス（弁護士・親族）を環境変数として定義
   - Hardhat の `hardhat.config.ts` に Base Sepolia ネットワーク設定を追加

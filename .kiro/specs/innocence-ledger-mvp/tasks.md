@@ -235,7 +235,7 @@
   - _Requirements: 1, 6_
   - _Completed: CaseContext.tsx および CaseContext.test.tsx 作成完了、全13テスト成功_
 
-- [ ] 8.2 CaseContext の寄付・引き出しアクションの実装
+- [x] 8.2 CaseContext の寄付・引き出しアクションの実装
   - `submitDonation(caseId, amount)` 関数を実装
   - useSemaphoreDonation フックを呼び出し、Semaphore Proof 生成と寄付トランザクションを実行
   - useBiconomy フックを使用してガスレス実行
@@ -244,6 +244,7 @@
   - useMultiSigWallet フックを呼び出し、引き出しトランザクションを実行
   - エラー時、エラーステートを設定し、ユーザーにエラーメッセージを表示
   - _Requirements: 2, 4, 9_
+  - _Completed: CaseContext で submitDonation/requestWithdrawal 実装 + テスト追加_
 
 ---
 

@@ -5,7 +5,7 @@ import { JPYC_ABI, SEMAPHORE_DONATION_ABI } from "@/utils/web3/abi"
 import { CONTRACT_ADDRESSES } from "@/utils/web3/addresses"
 import { generateProof, Group } from "@semaphore-protocol/core"
 import { useCallback, useMemo, useState } from "react"
-import { createPublicClient, createWalletClient, custom, http } from "viem"
+import { type Address, type Hex, createPublicClient, createWalletClient, custom, encodeFunctionData, http } from "viem"
 import { baseSepolia } from "viem/chains"
 
 // Base Sepolia の JPYC Token Address
@@ -18,7 +18,11 @@ export interface UseSemaphoreDonationResult {
   donateWithProof: (
     donationContractAddress: `0x${string}`,
     walletAddress: `0x${string}`,
-    amount: bigint
+    amount: bigint,
+    options?: {
+      sendTransaction?: (to: Address, data: Hex, nexusClient?: any) => Promise<string | null>
+      nexusClient?: any
+    }
   ) => Promise<`0x${string}`>
   joinGroup: (groupId: string) => Promise<void>
   isLoading: boolean
@@ -80,13 +84,17 @@ export default function useSemaphoreDonation(): UseSemaphoreDonationResult {
     async (
       donationContractAddress: `0x${string}`,
       walletAddress: `0x${string}`,
-      amount: bigint
+      amount: bigint,
+      options?: {
+        sendTransaction?: (to: Address, data: Hex, nexusClient?: any) => Promise<string | null>
+        nexusClient?: any
+      }
     ): Promise<`0x${string}`> => {
       if (!identity) {
         throw new Error("Semaphore identity is not available. Please create or restore your identity first.")
       }
 
-      if (!walletClient) {
+      if (!walletClient && !options?.sendTransaction) {
         throw new Error("ウォレットが接続されていません。MetaMaskなどのウォレットを接続してください。")
       }
 
@@ -94,15 +102,52 @@ export default function useSemaphoreDonation(): UseSemaphoreDonationResult {
         setIsLoading(true)
         setError(null)
 
-        // アカウントを取得
-        const accounts = await walletClient.getAddresses()
-        const account = accounts[0]
-
         // 1. Group を作成
         const group = new Group(_users)
 
         // 2. Semaphore Proof を生成
         const { merkleTreeRoot, nullifier, points: proof } = await generateProof(identity, group, amount, walletAddress)
+
+        if (options?.sendTransaction) {
+          const approveData = encodeFunctionData({
+            abi: JPYC_ABI,
+            functionName: "approve",
+            args: [donationContractAddress, amount]
+          })
+
+          const donationData = encodeFunctionData({
+            abi: SEMAPHORE_DONATION_ABI,
+            functionName: "donateWithProof",
+            args: [
+              BigInt(merkleTreeRoot),
+              BigInt(nullifier),
+              proof.map((p) => BigInt(p)) as [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint],
+              walletAddress,
+              amount
+            ]
+          })
+
+          const approvalHash = await options.sendTransaction(JPYC_TOKEN_ADDRESS, approveData, options.nexusClient)
+          if (!approvalHash) {
+            throw new Error("JPYC approval transaction hash not returned")
+          }
+
+          const gaslessHash = await options.sendTransaction(donationContractAddress, donationData, options.nexusClient)
+          if (!gaslessHash) {
+            throw new Error("Donation transaction hash not returned")
+          }
+
+          setIsLoading(false)
+          return gaslessHash as `0x${string}`
+        }
+
+        if (!walletClient) {
+          throw new Error("ウォレットが接続されていません。MetaMaskなどのウォレットを接続してください。")
+        }
+
+        // アカウントを取得
+        const accounts = await walletClient.getAddresses()
+        const account = accounts[0]
 
         // 3. JPYC の approve を実行
         await walletClient.writeContract({

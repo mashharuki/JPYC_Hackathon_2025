@@ -1,6 +1,9 @@
-import { renderHook, waitFor, act } from "@testing-library/react"
+import { useBiconomy } from "@/hooks/useBiconomy"
+import useMultiSigWallet from "@/hooks/useMultiSigWallet"
+import useSemaphoreDonation from "@/hooks/useSemaphoreDonation"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import { ReactNode } from "react"
-import { useCaseContext, CaseContextProvider } from "../CaseContext"
+import { CaseContextProvider, useCaseContext } from "../CaseContext"
 
 // Mock fetch API
 global.fetch = jest.fn()
@@ -12,6 +15,7 @@ jest.mock("@/hooks/useMultiSigWallet", () => ({
     isWhitelisted: jest.fn(),
     addRecipient: jest.fn(),
     withdraw: jest.fn(),
+    getConnectedAddress: jest.fn(),
     isLoading: false,
     error: null
   }))
@@ -22,6 +26,15 @@ jest.mock("@/hooks/useSemaphoreDonation", () => ({
   default: jest.fn(() => ({
     donateWithProof: jest.fn(),
     joinGroup: jest.fn(),
+    isLoading: false,
+    error: null
+  }))
+}))
+
+jest.mock("@/hooks/useBiconomy", () => ({
+  useBiconomy: jest.fn(() => ({
+    initializeBiconomyAccount: jest.fn(),
+    sendTransaction: jest.fn(),
     isLoading: false,
     error: null
   }))
@@ -260,6 +273,89 @@ describe("CaseContext", () => {
       expect(result.current).toHaveProperty("error")
       expect(result.current).toHaveProperty("selectCase")
       expect(result.current).toHaveProperty("refreshCases")
+      expect(result.current).toHaveProperty("submitDonation")
+      expect(result.current).toHaveProperty("requestWithdrawal")
+    })
+  })
+
+  describe("submitDonation", () => {
+    it("should execute donation and update case amount", async () => {
+      const updatedCase = {
+        ...mockCases[0],
+        current_amount: "600000000000000000000"
+      }
+
+      ;(global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ cases: mockCases })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => updatedCase
+        })
+
+      const donateWithProof = jest.fn().mockResolvedValue("0xtxhash")
+      ;(useSemaphoreDonation as jest.Mock).mockReturnValue({
+        donateWithProof,
+        joinGroup: jest.fn(),
+        isLoading: false,
+        error: null
+      })
+      ;(useBiconomy as jest.Mock).mockReturnValue({
+        initializeBiconomyAccount: jest.fn().mockResolvedValue({ nexusClient: {} }),
+        sendTransaction: jest.fn().mockResolvedValue("0xgasless"),
+        isLoading: false,
+        error: null
+      })
+
+      const { result } = renderHook(() => useCaseContext(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.submitDonation("case-1", BigInt("100000000000000000000"))
+      })
+
+      expect(donateWithProof).toHaveBeenCalled()
+      expect(global.fetch).toHaveBeenCalledWith("/api/cases/case-1", expect.any(Object))
+      expect(result.current.transactionStatus).toBe("success")
+      expect(result.current.cases[0].currentAmount).toBe(BigInt("600000000000000000000"))
+    })
+  })
+
+  describe("requestWithdrawal", () => {
+    it("should execute withdrawal with connected address", async () => {
+      const withdraw = jest.fn().mockResolvedValue("0xwithdrawhash")
+      const getConnectedAddress = jest.fn().mockResolvedValue("0xabc0000000000000000000000000000000000000")
+      ;(useMultiSigWallet as jest.Mock).mockReturnValue({
+        isWhitelisted: jest.fn(),
+        addRecipient: jest.fn(),
+        withdraw,
+        getConnectedAddress,
+        isLoading: false,
+        error: null
+      })
+
+      const { result } = renderHook(() => useCaseContext(), { wrapper })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.requestWithdrawal("case-1", BigInt("1000000000000000000"))
+      })
+
+      expect(getConnectedAddress).toHaveBeenCalled()
+      expect(withdraw).toHaveBeenCalledWith(
+        "0x1234567890123456789012345678901234567890",
+        "0xabc0000000000000000000000000000000000000",
+        BigInt("1000000000000000000")
+      )
+      expect(result.current.transactionStatus).toBe("success")
     })
   })
 

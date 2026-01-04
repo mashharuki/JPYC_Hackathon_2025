@@ -18,6 +18,7 @@ export interface UseMultiSigWalletResult {
   isWhitelisted: (walletAddress: `0x${string}`, recipientAddress: `0x${string}`) => Promise<boolean>
   addRecipient: (walletAddress: `0x${string}`, recipientAddress: `0x${string}`, nonce: bigint) => Promise<`0x${string}`>
   withdraw: (walletAddress: `0x${string}`, recipientAddress: `0x${string}`, amount: bigint) => Promise<`0x${string}`>
+  getConnectedAddress: () => Promise<`0x${string}`>
   isLoading: boolean
   error: Error | null
 }
@@ -216,10 +217,31 @@ export default function useMultiSigWallet(): UseMultiSigWalletResult {
     [walletClient]
   )
 
+  /**
+   * 接続中のウォレットアドレスを取得
+   *
+   * @returns 接続中のアドレス
+   * @throws {Error} ウォレットが接続されていない場合
+   */
+  const getConnectedAddress = useCallback(async (): Promise<`0x${string}`> => {
+    if (!walletClient) {
+      throw new Error("ウォレットが接続されていません。MetaMaskなどのウォレットを接続してください。")
+    }
+
+    const accounts = await walletClient.getAddresses()
+    const account = accounts[0]
+    if (!account) {
+      throw new Error("接続中のウォレットアドレスが取得できませんでした。")
+    }
+
+    return account as `0x${string}`
+  }, [walletClient])
+
   return {
     isWhitelisted,
     addRecipient,
     withdraw,
+    getConnectedAddress,
     isLoading,
     error
   }

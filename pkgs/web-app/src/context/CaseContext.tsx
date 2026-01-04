@@ -1,5 +1,9 @@
 "use client"
 
+import { useBiconomy } from "@/hooks/useBiconomy"
+import useMultiSigWallet from "@/hooks/useMultiSigWallet"
+import useSemaphoreDonation from "@/hooks/useSemaphoreDonation"
+import { CONTRACT_ADDRESSES } from "@/utils/web3/addresses"
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react"
 
 /**
@@ -33,6 +37,8 @@ export type CaseContextType = {
   error: Error | null // エラー状態
   selectCase: (caseId: string | null) => void // ケースを選択する関数
   refreshCases: () => Promise<void> // ケース一覧を再取得する関数
+  submitDonation: (caseId: string, amount: bigint) => Promise<`0x${string}`>
+  requestWithdrawal: (caseId: string, amount: bigint) => Promise<`0x${string}`>
 }
 
 const CaseContext = createContext<CaseContextType | null>(null)
@@ -52,6 +58,25 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatus>("idle")
   const [error, setError] = useState<Error | null>(null)
+  const { donateWithProof } = useSemaphoreDonation()
+  const { withdraw, getConnectedAddress } = useMultiSigWallet()
+  const { initializeBiconomyAccount, sendTransaction } = useBiconomy()
+
+  const donationContractAddress = CONTRACT_ADDRESSES[84532].SemaphoreDonation as `0x${string}`
+
+  const mapCase = useCallback((rawCase: any): Case => {
+    return {
+      id: rawCase.id,
+      title: rawCase.title,
+      description: rawCase.description,
+      goalAmount: BigInt(rawCase.goal_amount),
+      currentAmount: BigInt(rawCase.current_amount),
+      walletAddress: rawCase.wallet_address as `0x${string}`,
+      semaphoreGroupId: rawCase.semaphore_group_id,
+      createdAt: new Date(rawCase.created_at),
+      updatedAt: rawCase.updated_at ? new Date(rawCase.updated_at) : undefined
+    }
+  }, [])
 
   /**
    * fetchCases: Next.js API Routes からケースデータを取得
@@ -70,17 +95,7 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
       const data = await response.json()
 
       // API レスポンスを Case 型に変換（bigint 変換を含む）
-      const parsedCases: Case[] = data.cases.map((rawCase: any) => ({
-        id: rawCase.id,
-        title: rawCase.title,
-        description: rawCase.description,
-        goalAmount: BigInt(rawCase.goal_amount),
-        currentAmount: BigInt(rawCase.current_amount),
-        walletAddress: rawCase.wallet_address as `0x${string}`,
-        semaphoreGroupId: rawCase.semaphore_group_id,
-        createdAt: new Date(rawCase.created_at),
-        updatedAt: rawCase.updated_at ? new Date(rawCase.updated_at) : undefined
-      }))
+      const parsedCases: Case[] = data.cases.map((rawCase: any) => mapCase(rawCase))
 
       setCases(parsedCases)
       setIsLoading(false)
@@ -90,7 +105,7 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
       setIsLoading(false)
       // Don't rethrow - just set error state
     }
-  }, [])
+  }, [mapCase])
 
   /**
    * selectCase: ケース ID を指定してケースを選択
@@ -118,6 +133,85 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
     await fetchCases()
   }, [fetchCases])
 
+  const submitDonation = useCallback(
+    async (caseId: string, amount: bigint): Promise<`0x${string}`> => {
+      const targetCase = cases.find((c) => c.id === caseId)
+      if (!targetCase) {
+        throw new Error("Case not found")
+      }
+
+      try {
+        setTransactionStatus("pending")
+        setError(null)
+
+        let txHash: `0x${string}`
+
+        try {
+          const { nexusClient } = await initializeBiconomyAccount()
+          txHash = await donateWithProof(donationContractAddress, targetCase.walletAddress, amount, {
+            sendTransaction,
+            nexusClient
+          })
+        } catch (gaslessError) {
+          txHash = await donateWithProof(donationContractAddress, targetCase.walletAddress, amount)
+        }
+
+        const newAmount = (targetCase.currentAmount + amount).toString()
+        const response = await fetch(`/api/cases/${caseId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentAmount: newAmount })
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to update case amount: ${response.statusText}`)
+        }
+
+        const updated = await response.json()
+        const updatedCase = mapCase(updated)
+        setCases((prev) => prev.map((c) => (c.id === updatedCase.id ? updatedCase : c)))
+        if (selectedCase?.id === updatedCase.id) {
+          setSelectedCase(updatedCase)
+        }
+
+        setTransactionStatus("success")
+        return txHash
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        setTransactionStatus("failed")
+        throw error
+      }
+    },
+    [cases, donateWithProof, donationContractAddress, initializeBiconomyAccount, mapCase, selectedCase, sendTransaction]
+  )
+
+  const requestWithdrawal = useCallback(
+    async (caseId: string, amount: bigint): Promise<`0x${string}`> => {
+      const targetCase = cases.find((c) => c.id === caseId)
+      if (!targetCase) {
+        throw new Error("Case not found")
+      }
+
+      try {
+        setTransactionStatus("pending")
+        setError(null)
+
+        const recipientAddress = await getConnectedAddress()
+        const txHash = await withdraw(targetCase.walletAddress, recipientAddress, amount)
+
+        setTransactionStatus("success")
+        return txHash
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        setTransactionStatus("failed")
+        throw error
+      }
+    },
+    [cases, getConnectedAddress, withdraw]
+  )
+
   /**
    * コンポーネントのマウント時にケースデータを初回取得
    */
@@ -134,7 +228,9 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
         transactionStatus,
         error,
         selectCase,
-        refreshCases
+        refreshCases,
+        submitDonation,
+        requestWithdrawal
       }}
     >
       {children}

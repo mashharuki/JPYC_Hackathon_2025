@@ -227,12 +227,13 @@
 
 ### 8. CaseContext の実装
 
-- [ ] 8.1 CaseContext プロバイダーの実装
+- [x] 8.1 CaseContext プロバイダーの実装
   - `createContext` と `useContext` で Context を作成
   - State モデル: cases (Case[]), selectedCase (Case | null), isLoading (boolean), transactionStatus (TransactionStatus), error (ErrorState | null)
   - `useEffect` で Next.js API Routes からケースデータを取得し、状態を初期化
   - トランザクションステータスの管理（idle, pending, success, failed）
   - _Requirements: 1, 6_
+  - _Completed: CaseContext.tsx および CaseContext.test.tsx 作成完了、全13テスト成功_
 
 - [ ] 8.2 CaseContext の寄付・引き出しアクションの実装
   - `submitDonation(caseId, amount)` 関数を実装

@@ -47,7 +47,7 @@
   - _Requirements: 1, 3, 7_
   - _Completed: InnocentSupportWallet.sol および InnocentSupportWallet.test.ts 作成完了、全テスト成功（9 passing）_
 
-- [ ] 2.2 受取人ホワイトリスト追加機能の実装
+- [x] 2.2 受取人ホワイトリスト追加機能の実装
   - `addRecipient(address recipient, bytes[] signatures, uint256 nonce)` 関数を実装
   - EIP-712 型付き署名のハッシュを生成（`_hashTypedDataV4`）
   - ECDSA.recover で2つの署名から署名者アドレスを復元
@@ -56,8 +56,9 @@
   - nonce が未使用であることを確認し、使用済みとしてマーク
   - ホワイトリストに受取人を追加し、`RecipientAdded` イベントを発行
   - _Requirements: 3, 7_
+  - _Completed: signer order 検証とテスト追加_
 
-- [ ] 2.3 引き出し機能の実装
+- [x] 2.3 引き出し機能の実装
   - `withdraw(address recipient, uint256 amount)` 関数を実装
   - 呼び出し者がホワイトリストに登録されていることを検証（`require(isWhitelisted[msg.sender])`）
   - JPYC トークンの残高が引き出し額以上であることを検証
@@ -65,13 +66,15 @@
   - `WithdrawalExecuted` イベントを発行
   - Checks-Effects-Interactions パターンを適用してリエントランシー攻撃を防止
   - _Requirements: 4, 7, 8_
+  - _Completed: InnocentSupportWallet.sol に withdraw を追加、MockJPYC と引き出しテストを追加_
 
-- [ ] 2.4 残高取得と受取人削除機能の実装
+- [x] 2.4 残高取得と受取人削除機能の実装
   - `getJPYCBalance()` view 関数を実装（JPYC の `balanceOf` を呼び出し）
   - `isWhitelisted(address recipient)` view 関数を実装
   - `removeRecipient(address recipient, bytes[] signatures, uint256 nonce)` 関数を実装（`addRecipient` と同様の2署名検証）
   - `RecipientRemoved` イベントを発行
   - _Requirements: 3, 5_
+  - _Completed: 残高取得と削除機能の実装、テスト追加_
 
 ---
 

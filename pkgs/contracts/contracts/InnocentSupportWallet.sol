@@ -3,6 +3,7 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title InnocentSupportWallet
@@ -92,6 +93,14 @@ contract InnocentSupportWallet is EIP712 {
   }
 
   /**
+   * @dev JPYC トークン残高を取得
+   * @return uint256 コントラクトの JPYC 残高
+   */
+  function getJPYCBalance() public view returns (uint256) {
+    return IERC20(jpycTokenAddress).balanceOf(address(this));
+  }
+
+  /**
    * @dev nonce が使用済みであるかを確認
    * @param nonce 確認する nonce
    * @return bool 使用済みの場合 true
@@ -106,5 +115,101 @@ contract InnocentSupportWallet is EIP712 {
    */
   function getOwners() public view returns (address[] memory) {
     return _owners;
+  }
+
+  // ===== Public / External Functions =====
+
+  /**
+   * @dev 受取人をホワイトリストに追加（2署名検証）
+   * @param recipient 追加する受取人アドレス
+   * @param signatures Owner の署名配列（必ず2つ）
+   * @param nonce リプレイ攻撃防止用の nonce
+   */
+  function addRecipient(address recipient, bytes[] memory signatures, uint256 nonce) external {
+    // 受取人アドレスが zero address でないことを検証
+    require(recipient != address(0), "Invalid recipient address");
+
+    // 署名は必ず2つであることを検証
+    require(signatures.length == 2, "Must provide exactly 2 signatures");
+
+    // nonce が未使用であることを確認
+    require(!_usedNonces[nonce], "Nonce already used");
+
+    // EIP-712 型付きデータのハッシュを生成
+    bytes32 structHash = keccak256(
+      abi.encode(keccak256("AddRecipient(address recipient,uint256 nonce)"), recipient, nonce)
+    );
+    bytes32 digest = _hashTypedDataV4(structHash);
+
+    // 署名から署名者アドレスを復元
+    address signer1 = ECDSA.recover(digest, signatures[0]);
+    address signer2 = ECDSA.recover(digest, signatures[1]);
+
+    // 両方の署名者が Owner であることを検証
+    require(_isOwner[signer1], "Invalid signer: not an owner");
+    require(_isOwner[signer2], "Invalid signer: not an owner");
+
+    // 署名者が重複していないことを検証
+    require(signer1 != signer2, "Duplicate signer");
+
+    // 署名者の順序を固定し、署名の重複を防止
+    require(signer1 < signer2, "Invalid signer order");
+
+    // nonce を使用済みとしてマーク
+    _usedNonces[nonce] = true;
+
+    // ホワイトリストに受取人を追加
+    _isWhitelisted[recipient] = true;
+
+    // イベントを発行
+    emit RecipientAdded(recipient, block.timestamp);
+  }
+
+  /**
+   * @dev 受取人をホワイトリストから削除（2署名検証）
+   * @param recipient 削除する受取人アドレス
+   * @param signatures Owner の署名配列（必ず2つ）
+   * @param nonce リプレイ攻撃防止用の nonce
+   */
+  function removeRecipient(address recipient, bytes[] memory signatures, uint256 nonce) external {
+    require(recipient != address(0), "Invalid recipient address");
+    require(signatures.length == 2, "Must provide exactly 2 signatures");
+    require(!_usedNonces[nonce], "Nonce already used");
+
+    bytes32 structHash = keccak256(
+      abi.encode(keccak256("RemoveRecipient(address recipient,uint256 nonce)"), recipient, nonce)
+    );
+    bytes32 digest = _hashTypedDataV4(structHash);
+
+    address signer1 = ECDSA.recover(digest, signatures[0]);
+    address signer2 = ECDSA.recover(digest, signatures[1]);
+
+    require(_isOwner[signer1], "Invalid signer: not an owner");
+    require(_isOwner[signer2], "Invalid signer: not an owner");
+    require(signer1 != signer2, "Duplicate signer");
+    require(signer1 < signer2, "Invalid signer order");
+
+    _usedNonces[nonce] = true;
+    _isWhitelisted[recipient] = false;
+
+    emit RecipientRemoved(recipient, block.timestamp);
+  }
+
+  /**
+   * @dev ホワイトリスト済みアドレスによる引き出し
+   * @param recipient 送金先アドレス
+   * @param amount 引き出し額
+   */
+  function withdraw(address recipient, uint256 amount) external {
+    require(_isWhitelisted[msg.sender], "Caller not whitelisted");
+
+    IERC20 jpycToken = IERC20(jpycTokenAddress);
+    uint256 balance = jpycToken.balanceOf(address(this));
+    require(balance >= amount, "Insufficient JPYC balance");
+
+    bool success = jpycToken.transfer(recipient, amount);
+    require(success, "JPYC transfer failed");
+
+    emit WithdrawalExecuted(recipient, amount, block.timestamp);
   }
 }

@@ -408,31 +408,23 @@ yarn deploy --network baseSepolia
 
 ```solidity
 interface ISupportWalletService {
-    // MultiSig Owner の初期化
-    function initialize(address[] memory _owners) external;
+  // MultiSig Owner の初期化
+  function initialize(address[] memory _owners) external;
 
-    // 受取人のホワイトリスト追加（2署名検証）
-    function addRecipient(
-        address recipient,
-        bytes[] memory signatures,
-        uint256 nonce
-    ) external;
+  // 受取人のホワイトリスト追加（2署名検証）
+  function addRecipient(address recipient, bytes[] memory signatures, uint256 nonce) external;
 
-    // 受取人のホワイトリスト削除（2署名検証）
-    function removeRecipient(
-        address recipient,
-        bytes[] memory signatures,
-        uint256 nonce
-    ) external;
+  // 受取人のホワイトリスト削除（2署名検証）
+  function removeRecipient(address recipient, bytes[] memory signatures, uint256 nonce) external;
 
-    // ホワイトリスト登録された受取人による JPYC 引き出し
-    function withdraw(address recipient, uint256 amount) external;
+  // ホワイトリスト登録された受取人による JPYC 引き出し
+  function withdraw(address recipient, uint256 amount) external;
 
-    // ホワイトリスト検証
-    function isWhitelisted(address recipient) external view returns (bool);
+  // ホワイトリスト検証
+  function isWhitelisted(address recipient) external view returns (bool);
 
-    // JPYC 残高確認
-    function getJPYCBalance() external view returns (uint256);
+  // JPYC 残高確認
+  function getJPYCBalance() external view returns (uint256);
 }
 ```
 
@@ -460,11 +452,11 @@ interface ISupportWalletService {
 - **State model**:
   ```solidity
   struct WalletState {
-      address[] owners;                     // MultiSig Owner のアドレス配列
-      mapping(address => bool) isOwner;     // Owner 判定用マッピング
-      mapping(address => bool) isWhitelisted; // 受取人ホワイトリスト
-      mapping(uint256 => bool) usedNonces;  // 署名リプレイ攻撃防止用 nonce
-      address jpycTokenAddress;             // JPYC ERC20 コントラクトアドレス
+    address[] owners; // MultiSig Owner のアドレス配列
+    mapping(address => bool) isOwner; // Owner 判定用マッピング
+    mapping(address => bool) isWhitelisted; // 受取人ホワイトリスト
+    mapping(uint256 => bool) usedNonces; // 署名リプレイ攻撃防止用 nonce
+    address jpycTokenAddress; // JPYC ERC20 コントラクトアドレス
   }
   ```
 - **Persistence & consistency**: すべての状態はオンチェーンで永続化、イベントログによる監査証跡を提供
@@ -504,20 +496,17 @@ interface ISupportWalletService {
 
 ```solidity
 interface IDonationService {
-    // Semaphore 証明付き寄付
-    function donateWithProof(
-        uint256 merkleTreeRoot,
-        uint256 nullifier,
-        uint256[8] calldata proof,
-        address walletAddress,
-        uint256 amount
-    ) external;
+  // Semaphore 証明付き寄付
+  function donateWithProof(
+    uint256 merkleTreeRoot,
+    uint256 nullifier,
+    uint256[8] calldata proof,
+    address walletAddress,
+    uint256 amount
+  ) external;
 
-    // 寄付履歴の取得（nullifier ベース）
-    function getDonationByNullifier(uint256 nullifier)
-        external
-        view
-        returns (uint256 amount, uint256 timestamp);
+  // 寄付履歴の取得（nullifier ベース）
+  function getDonationByNullifier(uint256 nullifier) external view returns (uint256 amount, uint256 timestamp);
 }
 ```
 
@@ -1013,23 +1002,11 @@ interface UpdateCaseRequest {
 **Event Schemas (Smart Contract Events)**:
 
 ```solidity
-event DonationRecorded(
-    uint256 indexed nullifier,
-    address indexed walletAddress,
-    uint256 amount,
-    uint256 timestamp
-);
+event DonationRecorded(uint256 indexed nullifier, address indexed walletAddress, uint256 amount, uint256 timestamp);
 
-event WithdrawalExecuted(
-    address indexed recipient,
-    uint256 amount,
-    uint256 timestamp
-);
+event WithdrawalExecuted(address indexed recipient, uint256 amount, uint256 timestamp);
 
-event RecipientAdded(
-    address indexed recipient,
-    uint256 timestamp
-);
+event RecipientAdded(address indexed recipient, uint256 timestamp);
 ```
 
 **Schema Versioning Strategy**:

@@ -1,14 +1,17 @@
 "use client"
 
+import { Button } from "@/components/ui"
 import { useLogContext } from "@/context/LogContext"
 import shortenString from "@/utils/shortenString"
+import { usePrivy } from "@privy-io/react-auth"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 /**
- * PageContainer: ページのコンテナーコンポーネント
- * @param param0
- * @returns
+ * PageContainer: ページの共通レイアウトを提供するコンテナーコンポーネント
+ * ヘッダー、フッター、メインコンテンツエリアを含みます。
+ *
+ * @param children - ページコンテンツ
  */
 export default function PageContainer({
   children
@@ -17,6 +20,7 @@ export default function PageContainer({
 }>) {
   const pathname = usePathname()
   const { log } = useLogContext()
+  const { login, logout, authenticated, ready } = usePrivy()
 
   /**
    * getExplorerLink: BlockExplorerへのリンクを生成する関数
@@ -38,10 +42,10 @@ export default function PageContainer({
   }
 
   return (
-    <>
+    <div className="page-wrapper">
       <div className="header">
         <Link href="/" className="header-left">
-          Feedback
+          Innocence Ledger
         </Link>
         <div className="header-right">
           <a
@@ -55,7 +59,7 @@ export default function PageContainer({
             <div>{shortenString(process.env.NEXT_PUBLIC_FEEDBACK_CONTRACT_ADDRESS as string, [6, 4])}</div>
           </a>
           <a
-            href="https://github.com/semaphore-protocol/semaphore/tree/main/packages/cli-template-monorepo-ethers"
+            href="https://github.com/mashharuki/JPYC_Hackathon_2025"
             target="_blank"
             rel="noreferrer noopener nofollow"
           >
@@ -72,17 +76,22 @@ export default function PageContainer({
               </svg>
             </button>
           </a>
+          {ready &&
+            (authenticated ? (
+              <Button onClick={logout} variant="ghost" size="sm" className="text-slate-400 hover:text-slate-100">
+                Logout
+              </Button>
+            ) : (
+              <Button onClick={login} variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                Login
+              </Button>
+            ))}
         </div>
       </div>
 
       <div className="container">{children}</div>
 
       <div className="divider-footer" />
-
-      <div className="footer">
-        {log.endsWith("...")}
-        <p>{log || `Current step: ${pathname}`}</p>
-      </div>
-    </>
+    </div>
   )
 }

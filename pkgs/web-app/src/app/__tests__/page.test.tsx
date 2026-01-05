@@ -1,139 +1,31 @@
 import "@testing-library/jest-dom"
-import { render, screen, waitFor } from "@testing-library/react"
-import IdentitiesPage from "../page"
+import { render, screen } from "@testing-library/react"
+import HomePage from "../page"
 
-// モック
-jest.mock("../../context/AuthContext", () => ({
-  useAuth: jest.fn()
-}))
-
-jest.mock("../../context/LogContext", () => ({
-  useLogContext: jest.fn()
-}))
-
-jest.mock("../../utils/supabase", () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(() => Promise.resolve({ data: null, error: null }))
-        }))
-      })),
-      upsert: jest.fn(() => Promise.resolve({ error: null }))
-    }))
-  }
-}))
-
-jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(() => ({
-    push: jest.fn()
-  }))
-}))
-
-jest.mock("../../components/Auth", () => {
-  return function Auth() {
-    return <div>Auth Component</div>
+jest.mock("../../components/CaseDashboard", () => {
+  return function CaseDashboard() {
+    return <div>CaseDashboard Component</div>
   }
 })
 
-jest.mock("../../components/Stepper", () => {
-  return function Stepper() {
-    return <div>Stepper Component</div>
+jest.mock("../../components/HomeClient", () => {
+  return function HomeClient() {
+    return <div>HomeClient Component</div>
   }
 })
 
-describe("IdentitiesPage (Privy Integration)", () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    const { useLogContext } = require("../../context/LogContext")
-    useLogContext.mockReturnValue({
-      setLog: jest.fn()
-    })
+describe("HomePage", () => {
+  it("should render the hero section", () => {
+    render(<HomePage />)
+
+    expect(screen.getByText("Innocence Ledger")).toBeInTheDocument()
+    expect(screen.getByText(/支援の透明性と匿名性を、/)).toBeInTheDocument()
   })
 
-  it("should show Auth component when user is not authenticated", () => {
-    const { useAuth } = require("../../context/AuthContext")
-    useAuth.mockReturnValue({
-      user: null,
-      ready: true,
-      authenticated: false,
-      login: jest.fn(),
-      logout: jest.fn()
-    })
+  it("should render dashboard and action panel", () => {
+    render(<HomePage />)
 
-    render(<IdentitiesPage />)
-
-    expect(screen.getByText("Auth Component")).toBeInTheDocument()
-  })
-
-  it("should show logout button when user is authenticated", async () => {
-    const { useAuth } = require("../../context/AuthContext")
-    const { useLogContext } = require("../../context/LogContext")
-    const mockSetLog = jest.fn()
-    useLogContext.mockReturnValue({
-      setLog: mockSetLog
-    })
-    const mockLogout = jest.fn()
-    useAuth.mockReturnValue({
-      user: { id: "test-privy-user-id" },
-      ready: true,
-      authenticated: true,
-      login: jest.fn(),
-      logout: mockLogout
-    })
-
-    render(<IdentitiesPage />)
-
-    const logoutButton = screen.getByRole("button", { name: /logout/i })
-    expect(logoutButton).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(mockSetLog).toHaveBeenCalledWith("Identity not found for this account. Create a new one below! 👇🏽")
-    })
-  })
-
-  it("should call logout when logout button is clicked", async () => {
-    const { useAuth } = require("../../context/AuthContext")
-    const { useLogContext } = require("../../context/LogContext")
-    const mockSetLog = jest.fn()
-    useLogContext.mockReturnValue({
-      setLog: mockSetLog
-    })
-    const mockLogout = jest.fn()
-    useAuth.mockReturnValue({
-      user: { id: "test-privy-user-id" },
-      ready: true,
-      authenticated: true,
-      login: jest.fn(),
-      logout: mockLogout
-    })
-
-    render(<IdentitiesPage />)
-
-    await waitFor(() => {
-      expect(mockSetLog).toHaveBeenCalledWith("Identity not found for this account. Create a new one below! 👇🏽")
-    })
-
-    const logoutButton = screen.getByRole("button", { name: /logout/i })
-    logoutButton.click()
-
-    await waitFor(() => {
-      expect(mockLogout).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  it("should show loading indicator when Privy is not ready", () => {
-    const { useAuth } = require("../../context/AuthContext")
-    useAuth.mockReturnValue({
-      user: null,
-      ready: false,
-      authenticated: false,
-      login: jest.fn(),
-      logout: jest.fn()
-    })
-
-    render(<IdentitiesPage />)
-
-    expect(screen.getByRole("status")).toBeInTheDocument()
+    expect(screen.getByText("CaseDashboard Component")).toBeInTheDocument()
+    expect(screen.getByText("HomeClient Component")).toBeInTheDocument()
   })
 })

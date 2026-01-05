@@ -7,9 +7,11 @@ export type StepperProps = {
 }
 
 /**
- * Stepper: ステッパーコンポーネント
- * @param param0
- * @returns
+ * Stepper: 3ステップの進行状況を表示するステッパーコンポーネント
+ *
+ * @param step - 現在のステップ番号 (1-3)
+ * @param onPrevClick - 「戻る」ボタンのクリックハンドラ (未指定の場合はボタン非表示)
+ * @param onNextClick - 「次へ」ボタンのクリックハンドラ (未指定の場合はボタン非表示)
  */
 export default function Stepper({ step, onPrevClick, onNextClick }: StepperProps) {
   return (

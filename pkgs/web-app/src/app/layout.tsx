@@ -6,30 +6,40 @@ import "./globals.css"
 // Privy and other client-only providers require client-side rendering
 export const dynamic = "force-dynamic"
 
-import { Inter } from "next/font/google"
-const inter = Inter({ subsets: ["latin"] })
+import { DM_Serif_Display, Space_Grotesk } from "next/font/google"
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-sans"
+})
+
+const dmSerif = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-serif"
+})
 
 /**
  * metadata: ページのメタデータ
  */
 export const metadata: Metadata = {
-  title: "Semaphore Demo",
-  description: "A zero-knowledge protocol for anonymous signaling on Ethereum.",
+  title: "Innocence Ledger",
+  description: "冤罪被害者支援のための透明性とプライバシーを両立するオンチェーン支援インフラ。",
   icons: { icon: "/icon.svg", apple: "/apple-icon.png" },
-  metadataBase: new URL("https://demo.semaphore.pse.dev"),
+  metadataBase: new URL("https://github.com/mashharuki/JPYC_Hackathon_2025"),
   openGraph: {
     type: "website",
-    url: "https://demo.semaphore.pse.dev",
-    title: "Semaphore Demo",
-    description: "A zero-knowledge protocol for anonymous signaling on Ethereum.",
-    siteName: "Semaphore Demo",
+    url: "https://github.com/mashharuki/JPYC_Hackathon_2025",
+    title: "Innocence Ledger",
+    description: "冤罪被害者支援のための透明性とプライバシーを両立するオンチェーン支援インフラ。",
+    siteName: "Innocence Ledger",
     images: [
       {
-        url: "https://demo.semaphore.pse.dev/social-media.png"
+        url: "https://innocence-ledger.local/social-media.png"
       }
     ]
   },
-  twitter: { card: "summary_large_image", images: "https://demo.semaphore.pse.dev/social-media.png" }
+  twitter: { card: "summary_large_image", images: "https://innocence-ledger.local/social-media.png" }
 }
 
 /**
@@ -44,12 +54,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com"></link>
-        <link rel="preconnect" href="https://fonts.gstatic.com"></link>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet"></link>
-      </head>
-      <body suppressHydrationWarning className={inter.className}>
+      <body suppressHydrationWarning className={`${spaceGrotesk.variable} ${dmSerif.variable}`}>
         <AppProviders>
           <PageContainer>{children}</PageContainer>
         </AppProviders>

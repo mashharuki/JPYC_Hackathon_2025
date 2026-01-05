@@ -4,6 +4,13 @@ import { Button, Spinner } from "@/components/ui"
 import useJPYCBalance from "@/hooks/useJPYCBalance"
 import { formatUnits } from "viem"
 
+/**
+ * トークン量をフォーマットするヘルパー関数
+ * @param amount - トークン量 (bigint)
+ * @param decimals - 小数点以下の桁数 (デフォルト: 18)
+ * @param fractionDigits - 表示する小数点以下の桁数 (デフォルト: 2)
+ * @returns フォーマットされた文字列
+ */
 const formatTokenAmount = (amount: bigint, decimals = 18, fractionDigits = 2) => {
   const raw = formatUnits(amount, decimals)
   const [integerPart, fractionPart = ""] = raw.split(".")
@@ -12,6 +19,13 @@ const formatTokenAmount = (amount: bigint, decimals = 18, fractionDigits = 2) =>
   return `${normalizedInteger}.${trimmedFraction}`
 }
 
+/**
+ * BalanceDisplayコンポーネント:
+ * 指定されたアドレスのETHおよびJPYC残高を表示します。
+ *
+ * @param address - 残高を表示するウォレットアドレス
+ * @param label - 表示ラベル (オプション)
+ */
 export default function BalanceDisplay({ address, label }: { address: `0x${string}`; label?: string }) {
   const { ethBalance, jpycBalance, refetch, isLoading, error } = useJPYCBalance(address)
 

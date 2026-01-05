@@ -1,31 +1,47 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
 import { Button, Input, Spinner } from "@/components/ui"
 import { useCaseContext } from "@/context/CaseContext"
 import useJPYCBalance from "@/hooks/useJPYCBalance"
 import useMultiSigWallet from "@/hooks/useMultiSigWallet"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { formatEther, parseEther } from "ethers"
+import { useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 type DonationFormValues = {
   amount: string
 }
 
+/**
+ * 入力値をBigInt (Wei単位) に変換するヘルパー関数
+ */
 const parseAmount = (value: string) => {
-  return BigInt(value)
+  try {
+    return parseEther(value)
+  } catch (e) {
+    return 0n
+  }
 }
 
+/**
+ * DonationFormコンポーネント:
+ * JPYCによる寄付を行うためのフォームを提供します。
+ *
+ * @param caseId - 寄付対象のケースID
+ */
 export default function DonationForm({ caseId }: { caseId: string }) {
   const { submitDonation, transactionStatus, error } = useCaseContext()
   const { getConnectedAddress } = useMultiSigWallet()
   const [walletAddress, setWalletAddress] = useState<`0x${string}` | null>(null)
 
+  // JPYC残高の取得
   const { jpycBalance, isLoading: balanceLoading } = useJPYCBalance(
     walletAddress ?? "0x0000000000000000000000000000000000000000"
   )
 
+  // 接続中のウォレットアドレスを取得
   useEffect(() => {
     getConnectedAddress()
       .then((address) => setWalletAddress(address))
@@ -34,17 +50,18 @@ export default function DonationForm({ caseId }: { caseId: string }) {
       })
   }, [getConnectedAddress])
 
+  // バリデーションスキーマの定義
   const schema = useMemo(() => {
     return z
       .object({
-        amount: z.string().regex(/^\d+$/, { message: "寄付額は数値で入力してください" })
+        amount: z.string().regex(/^\d+(\.\d+)?$/, { message: "寄付額は数値で入力してください" })
       })
       .superRefine((values, ctx) => {
         const amount = parseAmount(values.amount)
         if (amount <= 0n) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "寄付額は1以上で入力してください",
+            message: "寄付額は0より大きい値を入力してください",
             path: ["amount"]
           })
         }
@@ -68,6 +85,7 @@ export default function DonationForm({ caseId }: { caseId: string }) {
     defaultValues: { amount: "" }
   })
 
+  // フォーム送信時の処理
   const onSubmit = handleSubmit(async (values) => {
     const amount = parseAmount(values.amount)
     await submitDonation(caseId, amount)
@@ -92,7 +110,7 @@ export default function DonationForm({ caseId }: { caseId: string }) {
           <Spinner size="sm" />
         ) : (
           <div className="text-right text-xs text-slate-400">
-            JPYC残高: {jpycBalance !== undefined ? jpycBalance.toString() : "-"}
+            JPYC残高: {jpycBalance !== undefined ? Number(formatEther(jpycBalance)).toLocaleString() : "-"}
           </div>
         )}
       </div>

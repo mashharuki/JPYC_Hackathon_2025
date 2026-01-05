@@ -1,0 +1,94 @@
+<mxfile host="65bd71144e">
+    <diagram id="InnocenceLedger" name="System Architecture">
+        <mxGraphModel dx="515" dy="497" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;Innocence Ledger - System Architecture&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;透明性と匿名性を両立する冤罪支援プラットフォーム&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="20" width="600" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="usersBox" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;Users&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;align=center;spacingTop=10;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="100" width="180" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="donor" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;🤝 寄付者&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;匿名寄付&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="55" y="140" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="lawyer" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;👨‍⚖️ 弁護士&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;MultiSig 1/2&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="55" y="220" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="family" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;👨‍👩‍👧 親族&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;MultiSig 2/2&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="55" y="300" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="victim" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;⚖️ 支援対象者&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;資金受取&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="55" y="380" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="public" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;👁️ 一般ユーザー&lt;/font&gt;&lt;br&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;透明性検証&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="55" y="460" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="frontendBox" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;Frontend (Next.js)&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;align=center;spacingTop=10;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="100" width="280" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="auth" value="&lt;b&gt;🔐 Auth (Privy)&lt;/b&gt;&lt;br&gt;ウォレット認証" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="140" width="240" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard" value="&lt;b&gt;📊 Dashboard&lt;/b&gt;&lt;br&gt;ケース表示 (Supabase)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="210" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="donation" value="&lt;b&gt;💰 Donation Form&lt;/b&gt;&lt;br&gt;ZK Proof 生成・寄付" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="290" width="240" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="withdrawal" value="&lt;b&gt;💸 Withdrawal Form&lt;/b&gt;&lt;br&gt;EIP-712 署名・引き出し" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="380" width="240" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="balance" value="&lt;b&gt;📈 Balance Display&lt;/b&gt;&lt;br&gt;JPYC 残高表示" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="470" width="240" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="database" value="&lt;b&gt;🗄️ Database&lt;/b&gt;&lt;br&gt;Supabase&lt;br&gt;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="140" width="120" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="blockchainBox" value="&lt;b&gt;&lt;font style=&quot;font-size: 16px;&quot;&gt;Blockchain (Base Sepolia)&lt;/font&gt;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;align=center;spacingTop=10;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="100" width="560" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="jpyc" value="&lt;b&gt;💴 JPYC Token (ERC20)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1&lt;/font&gt;&lt;br&gt;ステーブルコイン" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="140" width="520" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="semaphoreDonation" value="&lt;b&gt;🎭 SemaphoreDonation&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2&lt;/font&gt;&lt;br&gt;• ZK Proof 検証 (Groth16)&lt;br&gt;• 匿名寄付処理&lt;br&gt;• nullifier 管理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="220" width="520" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="wallet" value="&lt;b&gt;🏦 InnocentSupportWallet&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b&lt;/font&gt;&lt;br&gt;• 2/2 MultiSig (弁護士 + 親族)&lt;br&gt;• EIP-712 署名検証&lt;br&gt;• 受取人ホワイトリスト&lt;br&gt;• nonce 管理 (リプレイ攻撃防止)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="340" width="520" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="verifier" value="&lt;b&gt;✅ SemaphoreVerifier&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;0x39466Be45A95D44201924B04aB59985aFb427249&lt;/font&gt;&lt;br&gt;Groth16 ZK Proof 検証" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="480" width="520" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow1" value="" style="endArrow=classic;startArrow=classic;html=1;strokeWidth=2;strokeColor=#666666;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="donor" target="auth" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow2" value="donateWithProof()" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#9673a6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=#ffffff;fontStyle=1" parent="1" source="donation" target="semaphoreDonation" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow3" value="withdraw(2署名)" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#d79b00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=#ffffff;fontStyle=1" parent="1" source="withdrawal" target="wallet" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow4" value="ケース情報" style="endArrow=classic;startArrow=classic;html=1;strokeWidth=2;strokeColor=#b85450;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=#ffffff;" parent="1" source="dashboard" target="database" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow5" value="JPYC転送" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#82b366;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;labelBackgroundColor=#ffffff;fontStyle=1" parent="1" source="semaphoreDonation" target="jpyc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow6" value="JPYC引き出し" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#d79b00;exitX=0.8;exitY=0;exitDx=0;exitDy=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;labelBackgroundColor=#ffffff;fontStyle=1" parent="1" source="wallet" target="jpyc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;🔑 Key Features&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;br&gt;🎭 完全匿名寄付 (Semaphore ZK)&lt;br&gt;🔒 2/2 MultiSig 資金管理&lt;br&gt;📊 完全な透明性 (オンチェーン)&lt;br&gt;🛡️ リプレイ攻撃防止 (nonce)&lt;br&gt;💴 JPYCステーブルコイン" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="640" width="320" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="workflow" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;📋 Workflow&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. 匿名寄付: Semaphore Proof → 寄付&lt;br&gt;2. 資金管理: MultiSig Wallet (2署名)&lt;br&gt;3. 受取人登録: ホワイトリスト追加&lt;br&gt;4. 引き出し: 2署名 → JPYC送金&lt;br&gt;5. 透明性: オンチェーン検証可能" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="640" width="420" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="tech" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;⚡ Tech Stack&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frontend:&lt;/b&gt; Next.js, React, Privy, Biconomy&lt;br&gt;&lt;b&gt;Contracts:&lt;/b&gt; Solidity, OpenZeppelin, Semaphore&lt;br&gt;&lt;b&gt;Blockchain:&lt;/b&gt; Base Sepolia (L2), ethers.js&lt;br&gt;&lt;b&gt;Database:&lt;/b&gt; Supabase (PostgreSQL)&lt;br&gt;&lt;b&gt;Infra:&lt;/b&gt; Vercel, GitHub Actions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=10;" parent="1" vertex="1">
+                    <mxGeometry x="860" y="640" width="500" height="180" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

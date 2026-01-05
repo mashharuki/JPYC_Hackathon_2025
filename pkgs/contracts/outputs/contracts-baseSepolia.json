@@ -1,9 +1,9 @@
 {
   "contracts": {
     "Feedback": "0x521a4A2D9A6542A1a578ecF362B8CBeE4Ef46e02",
-    "SemaphoreVerifier": "0x42F08AA61794dC6ebDbE7DA14d34b1BE4452f301",
+    "SemaphoreVerifier": "0x39466Be45A95D44201924B04aB59985aFb427249",
     "JPYCToken": "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1",
-    "InnocentSupportWallet": "0xA5C193EfA151C1266A8bc8aA285f44DE4d45FA6d",
-    "SemaphoreDonation": "0xC899369b0F04d7b5D23E8E8Cc09EfEcE4a76dBC1"
+    "InnocentSupportWallet": "0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b",
+    "SemaphoreDonation": "0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2"
   }
 }

@@ -1,19 +1,20 @@
 /**
  * shadcn/ui コンポーネントのエクスポート
  */
+export { Badge, badgeVariants } from "./badge"
 export { Button, buttonVariants } from "./button"
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./card"
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card"
 export {
   Dialog,
-  DialogPortal,
-  DialogOverlay,
   DialogClose,
-  DialogTrigger,
   DialogContent,
-  DialogHeader,
+  DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
-  DialogDescription
+  DialogTrigger
 } from "./dialog"
 export { Input } from "./input"
 export { Label } from "./label"

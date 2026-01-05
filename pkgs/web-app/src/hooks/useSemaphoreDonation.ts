@@ -1,6 +1,5 @@
 import { useSemaphoreContext } from "@/context/SemaphoreContext"
 import useSemaphoreIdentity from "@/hooks/useSemaphoreIdentity"
-import { supabase } from "@/utils/supabase"
 import { JPYC_ABI, SEMAPHORE_DONATION_ABI } from "@/utils/web3/abi"
 import { CONTRACT_ADDRESSES } from "@/utils/web3/addresses"
 import { generateProof, Group } from "@semaphore-protocol/core"
@@ -24,7 +23,6 @@ export interface UseSemaphoreDonationResult {
       nexusClient?: any
     }
   ) => Promise<`0x${string}`>
-  joinGroup: (groupId: string) => Promise<void>
   isLoading: boolean
   error: Error | null
 }
@@ -185,56 +183,8 @@ export default function useSemaphoreDonation(): UseSemaphoreDonationResult {
     [identity, walletClient, _users]
   )
 
-  /**
-   * Semaphore Group にユーザーを追加
-   *
-   * @remarks
-   * グループに参加することで、ユーザーは匿名で寄付を行うことができるようになります。
-   * Identity の commitment がグループの Merkle Tree に追加されます。
-   *
-   * @param groupId - 参加する Semaphore Group の ID
-   * @throws {Error} Identity未取得、データベースエラー時
-   *
-   * @example
-   * ```typescript
-   * const { joinGroup } = useSemaphoreDonation()
-   * await joinGroup("case-12345-supporters")
-   * ```
-   */
-  const joinGroup = useCallback(
-    async (groupId: string): Promise<void> => {
-      if (!identity) {
-        throw new Error("Semaphore identity is not available. Please create or restore your identity first.")
-      }
-
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        // Supabase に group member を追加
-        const { data, error } = await supabase.from("group_members").insert({
-          group_id: groupId,
-          commitment: identity.commitment.toString()
-        })
-
-        if (error) {
-          throw new Error(`Failed to join group ${groupId}: ${error.message}`)
-        }
-
-        setIsLoading(false)
-      } catch (err) {
-        const error = err as Error
-        setError(error)
-        setIsLoading(false)
-        throw error
-      }
-    },
-    [identity]
-  )
-
   return {
     donateWithProof,
-    joinGroup,
     isLoading,
     error
   }

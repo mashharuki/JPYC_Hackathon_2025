@@ -8,7 +8,8 @@ import {
 } from "@biconomy/abstractjs"
 import { useWallets } from "@privy-io/react-auth"
 import { useCallback, useState } from "react"
-import { type Address, type Hex, http } from "viem"
+import { type Address, type Hex, http, createPublicClient } from "viem"
+import { waitForTransactionReceipt } from "viem/actions"
 import { baseSepolia } from "viem/chains"
 
 /**
@@ -70,6 +71,12 @@ export const useBiconomy = () => {
 
   // エンベデッドウォレットの取得
   const embeddedWallet = wallets?.[0]
+
+  // トランザクション確認用のPublicClientを作成
+  const publicClient = createPublicClient({
+    chain: baseSepolia,
+    transport: http()
+  })
 
   // Biconomyアカウントの状態を管理する
   const [accountState, setAccountState] = useState<BiconomyAccountState>({

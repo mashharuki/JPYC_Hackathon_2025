@@ -1,6 +1,6 @@
 import { INNOCENT_SUPPORT_WALLET_ABI } from "@/utils/web3/abi"
 import { useCallback, useMemo, useState } from "react"
-import { createPublicClient, createWalletClient, custom, http } from "viem"
+import { type Address, type Hex, createPublicClient, encodeFunctionData, http } from "viem"
 import { readContract } from "viem/actions"
 import { baseSepolia } from "viem/chains"
 
@@ -16,9 +16,21 @@ const EIP712_DOMAIN = {
  */
 export interface UseMultiSigWalletResult {
   isWhitelisted: (walletAddress: `0x${string}`, recipientAddress: `0x${string}`) => Promise<boolean>
-  addRecipient: (walletAddress: `0x${string}`, recipientAddress: `0x${string}`, nonce: bigint) => Promise<`0x${string}`>
-  withdraw: (walletAddress: `0x${string}`, recipientAddress: `0x${string}`, amount: bigint) => Promise<`0x${string}`>
-  getConnectedAddress: () => Promise<`0x${string}`>
+  addRecipient: (
+    walletAddress: `0x${string}`,
+    recipientAddress: `0x${string}`,
+    nonce: bigint,
+    sendTransaction: (to: Address, data: Hex, nexusClient?: any) => Promise<string | null>,
+    nexusClient?: any
+  ) => Promise<`0x${string}`>
+  withdraw: (
+    walletAddress: `0x${string}`,
+    recipientAddress: `0x${string}`,
+    amount: bigint,
+    sendTransaction: (to: Address, data: Hex, nexusClient?: any) => Promise<string | null>,
+    nexusClient?: any
+  ) => Promise<`0x${string}`>
+  getConnectedAddress: (connectedAddress: `0x${string}`) => `0x${string}`
   isLoading: boolean
   error: Error | null
 }
@@ -42,17 +54,6 @@ export default function useMultiSigWallet(): UseMultiSigWalletResult {
       }),
     []
   )
-
-  // Wallet Client の作成（useMemoで最適化）
-  const walletClient = useMemo(() => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      return createWalletClient({
-        chain: baseSepolia,
-        transport: custom(window.ethereum)
-      })
-    }
-    return null
-  }, [])
 
   /**
    * 受取人がホワイトリストに登録されているかを確認
@@ -89,88 +90,36 @@ export default function useMultiSigWallet(): UseMultiSigWalletResult {
    *
    * @remarks
    * 本番環境では、2人のOwnerが順次署名を行う必要があります。
-   * MVPでは、テスト目的で同一ウォレットから2つの署名を生成しています。
+   * Biconomy経由での実装は、EIP-712署名が必要なため、
+   * 現時点では未実装です。将来的な実装が必要です。
    *
    * @param walletAddress - MultiSig Wallet のコントラクトアドレス
    * @param recipientAddress - ホワイトリストに追加する受取人アドレス
    * @param nonce - リプレイ攻撃防止用の nonce
+   * @param sendTransaction - Biconomyのトランザクション送信関数
+   * @param nexusClient - BiconomyのNexusクライアント
    * @returns トランザクションハッシュ
-   * @throws {Error} ウォレット接続エラー、署名拒否、トランザクション失敗時
+   * @throws {Error} 未実装エラー
    */
   const addRecipient = useCallback(
-    async (walletAddress: `0x${string}`, recipientAddress: `0x${string}`, nonce: bigint): Promise<`0x${string}`> => {
-      if (!walletClient) {
-        throw new Error("ウォレットが接続されていません。MetaMaskなどのウォレットを接続してください。")
-      }
-
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        // EIP-712 型付きデータの定義
-        const types = {
-          AddRecipient: [
-            { name: "recipient", type: "address" },
-            { name: "nonce", type: "uint256" }
-          ]
-        }
-
-        const message = {
-          recipient: recipientAddress,
-          nonce
-        }
-
-        const domain = {
-          ...EIP712_DOMAIN,
-          verifyingContract: walletAddress
-        }
-
-        // アカウントを取得
-        const accounts = await walletClient.getAddresses()
-        const account = accounts[0]
-
-        // Owner 1 の署名を取得
-        const signature1 = await walletClient.signTypedData({
-          account,
-          domain,
-          types,
-          primaryType: "AddRecipient",
-          message
-        })
-
-        // Owner 2 の署名を取得
-        // NOTE: 本番環境では別のウォレットから署名を取得
-        const signature2 = await walletClient.signTypedData({
-          account,
-          domain,
-          types,
-          primaryType: "AddRecipient",
-          message
-        })
-
-        // addRecipient トランザクションを送信
-        const txHash = await walletClient.writeContract({
-          address: walletAddress,
-          abi: INNOCENT_SUPPORT_WALLET_ABI,
-          functionName: "addRecipient",
-          args: [recipientAddress, [signature1, signature2], nonce],
-          account
-        })
-
-        setIsLoading(false)
-        return txHash
-      } catch (err) {
-        const error = err as Error
-        setError(error)
-        setIsLoading(false)
-        throw error
-      }
+    async (
+      walletAddress: `0x${string}`,
+      recipientAddress: `0x${string}`,
+      nonce: bigint,
+      sendTransaction: (to: Address, data: Hex, nexusClient?: any) => Promise<string | null>,
+      nexusClient?: any
+    ): Promise<`0x${string}`> => {
+      // TODO: EIP-712署名をBiconomy対応で実装する必要がある
+      throw new Error(
+        "addRecipient is not yet implemented for Biconomy. " +
+          "This function requires EIP-712 signatures which need special handling with Account Abstraction."
+      )
     },
-    [walletClient]
+    []
   )
 
   /**
-   * 引き出しトランザクションを実行
+   * Biconomy経由で引き出しトランザクションを実行
    *
    * @remarks
    * 引き出しはホワイトリストに登録された受取人のみが実行できます。
@@ -179,34 +128,40 @@ export default function useMultiSigWallet(): UseMultiSigWalletResult {
    * @param walletAddress - MultiSig Wallet のコントラクトアドレス
    * @param recipientAddress - JPYC の送金先アドレス
    * @param amount - 引き出し額（wei単位）
+   * @param sendTransaction - Biconomyのトランザクション送信関数
+   * @param nexusClient - BiconomyのNexusクライアント
    * @returns トランザクションハッシュ
-   * @throws {Error} ウォレット接続エラー、ホワイトリスト未登録、残高不足時
+   * @throws {Error} ホワイトリスト未登録、残高不足時
    */
   const withdraw = useCallback(
-    async (walletAddress: `0x${string}`, recipientAddress: `0x${string}`, amount: bigint): Promise<`0x${string}`> => {
-      if (!walletClient) {
-        throw new Error("ウォレットが接続されていません。MetaMaskなどのウォレットを接続してください。")
-      }
-
+    async (
+      walletAddress: `0x${string}`,
+      recipientAddress: `0x${string}`,
+      amount: bigint,
+      sendTransaction: (to: Address, data: Hex, nexusClient?: any) => Promise<string | null>,
+      nexusClient?: any
+    ): Promise<`0x${string}`> => {
       try {
         setIsLoading(true)
         setError(null)
 
-        // アカウントを取得
-        const accounts = await walletClient.getAddresses()
-        const account = accounts[0]
-
-        // withdraw トランザクションを送信
-        const txHash = await walletClient.writeContract({
-          address: walletAddress,
+        // withdraw トランザクションデータを生成
+        const withdrawData = encodeFunctionData({
           abi: INNOCENT_SUPPORT_WALLET_ABI,
           functionName: "withdraw",
-          args: [recipientAddress, amount],
-          account
+          args: [recipientAddress, amount]
         })
 
+        // Biconomy経由でトランザクションを送信
+        const txHash = await sendTransaction(walletAddress, withdrawData, nexusClient)
+        if (!txHash) {
+          throw new Error("Withdrawal transaction hash not returned")
+        }
+
+        console.log("Withdrawal transaction sent:", txHash)
+
         setIsLoading(false)
-        return txHash
+        return txHash as `0x${string}`
       } catch (err) {
         const error = err as Error
         setError(error)
@@ -214,28 +169,18 @@ export default function useMultiSigWallet(): UseMultiSigWalletResult {
         throw error
       }
     },
-    [walletClient]
+    []
   )
 
   /**
-   * 接続中のウォレットアドレスを取得
+   * 接続中のウォレットアドレスを返す（単純なパススルー関数）
    *
+   * @param connectedAddress - Privyから取得した接続中のアドレス
    * @returns 接続中のアドレス
-   * @throws {Error} ウォレットが接続されていない場合
    */
-  const getConnectedAddress = useCallback(async (): Promise<`0x${string}`> => {
-    if (!walletClient) {
-      throw new Error("ウォレットが接続されていません。MetaMaskなどのウォレットを接続してください。")
-    }
-
-    const accounts = await walletClient.getAddresses()
-    const account = accounts[0]
-    if (!account) {
-      throw new Error("接続中のウォレットアドレスが取得できませんでした。")
-    }
-
-    return account as `0x${string}`
-  }, [walletClient])
+  const getConnectedAddress = useCallback((connectedAddress: `0x${string}`): `0x${string}` => {
+    return connectedAddress
+  }, [])
 
   return {
     isWhitelisted,

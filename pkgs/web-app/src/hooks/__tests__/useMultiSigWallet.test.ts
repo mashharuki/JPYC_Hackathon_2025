@@ -19,7 +19,8 @@ jest.mock("viem", () => ({
   createWalletClient: jest.fn(() => mockWalletClient),
   createPublicClient: jest.fn(() => mockPublicClient),
   http: jest.fn(),
-  custom: jest.fn()
+  custom: jest.fn(),
+  encodeFunctionData: jest.fn(() => "0xencodedData" as `0x${string}`)
 }))
 
 // Mock window.ethereum
@@ -88,130 +89,125 @@ describe("useMultiSigWallet", () => {
   })
 
   describe("addRecipient", () => {
-    it("should collect 2 signatures and add recipient successfully", async () => {
-      const mockSignature1 = "0xsignature1" as `0x${string}`
-      const mockSignature2 = "0xsignature2" as `0x${string}`
-
-      mockWalletClient.signTypedData.mockResolvedValueOnce(mockSignature1).mockResolvedValueOnce(mockSignature2)
-      mockWalletClient.writeContract.mockResolvedValue(mockTxHash)
+    it("should throw error for unimplemented Biconomy feature", async () => {
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
-
-      let txHash
       await act(async () => {
-        txHash = await result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)
-      })
-
-      expect(txHash).toBe(mockTxHash)
-      expect(mockWalletClient.signTypedData).toHaveBeenCalledTimes(2)
-      expect(mockWalletClient.writeContract).toHaveBeenCalledWith(
-        expect.objectContaining({
-          address: mockWalletAddress,
-          functionName: "addRecipient",
-          args: [mockRecipientAddress, [mockSignature1, mockSignature2], mockNonce]
-        })
-      )
-    })
-
-    it("should set loading state during transaction", async () => {
-      mockWalletClient.signTypedData.mockResolvedValue("0xsig")
-      mockWalletClient.writeContract.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockTxHash), 100))
-      )
-
-      const { result } = renderHook(() => useMultiSigWallet())
-
-      let addRecipientPromise
-      await act(async () => {
-        addRecipientPromise = result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)
-      })
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(true)
-      })
-
-      await act(async () => {
-        await addRecipientPromise
-      })
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
+        await expect(
+          result.current.addRecipient(
+            mockWalletAddress,
+            mockRecipientAddress,
+            mockNonce,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("addRecipient is not yet implemented for Biconomy")
       })
     })
 
-    it("should handle signature collection failure", async () => {
-      const signError = new Error("User rejected signature")
-      mockWalletClient.signTypedData.mockRejectedValue(signError)
+    it("should throw error immediately without loading state", async () => {
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
       await act(async () => {
-        await expect(result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)).rejects.toThrow(
-          "User rejected signature"
-        )
+        await expect(
+          result.current.addRecipient(
+            mockWalletAddress,
+            mockRecipientAddress,
+            mockNonce,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("addRecipient is not yet implemented for Biconomy")
       })
 
-      await waitFor(() => {
-        expect(result.current.error).toBeTruthy()
-        expect(result.current.isLoading).toBe(false)
+      // エラーは即座に発生するので、loadingはfalseのまま
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    it("should throw unimplemented error instead of signature error", async () => {
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
+
+      const { result } = renderHook(() => useMultiSigWallet())
+
+      await act(async () => {
+        await expect(
+          result.current.addRecipient(
+            mockWalletAddress,
+            mockRecipientAddress,
+            mockNonce,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("addRecipient is not yet implemented for Biconomy")
       })
     })
 
-    it("should handle transaction failure", async () => {
-      mockWalletClient.signTypedData.mockResolvedValue("0xsig")
-      const txError = new Error("Transaction reverted")
-      mockWalletClient.writeContract.mockRejectedValue(txError)
+    it("should throw unimplemented error instead of transaction error", async () => {
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
       await act(async () => {
-        await expect(result.current.addRecipient(mockWalletAddress, mockRecipientAddress, mockNonce)).rejects.toThrow(
-          "Transaction reverted"
-        )
-      })
-
-      await waitFor(() => {
-        expect(result.current.error).toBeTruthy()
-        expect(result.current.isLoading).toBe(false)
+        await expect(
+          result.current.addRecipient(
+            mockWalletAddress,
+            mockRecipientAddress,
+            mockNonce,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("addRecipient is not yet implemented for Biconomy")
       })
     })
   })
 
   describe("withdraw", () => {
     it("should execute withdrawal successfully when whitelisted", async () => {
-      mockWalletClient.writeContract.mockResolvedValue(mockTxHash)
+      const mockSendTransaction = jest.fn().mockResolvedValue(mockTxHash)
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
       let txHash
       await act(async () => {
-        txHash = await result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)
+        txHash = await result.current.withdraw(
+          mockWalletAddress,
+          mockRecipientAddress,
+          mockAmount,
+          mockSendTransaction,
+          mockNexusClient
+        )
       })
 
       expect(txHash).toBe(mockTxHash)
-      expect(mockWalletClient.writeContract).toHaveBeenCalledWith(
-        expect.objectContaining({
-          address: mockWalletAddress,
-          functionName: "withdraw",
-          args: [mockRecipientAddress, mockAmount]
-        })
-      )
+      expect(mockSendTransaction).toHaveBeenCalledWith(mockWalletAddress, "0xencodedData", mockNexusClient)
     })
 
     it("should set loading state during withdrawal", async () => {
-      mockWalletClient.writeContract.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockTxHash), 100))
-      )
+      const mockSendTransaction = jest
+        .fn()
+        .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(mockTxHash), 100)))
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
       let withdrawPromise
       await act(async () => {
-        withdrawPromise = result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)
+        withdrawPromise = result.current.withdraw(
+          mockWalletAddress,
+          mockRecipientAddress,
+          mockAmount,
+          mockSendTransaction,
+          mockNexusClient
+        )
       })
 
       await waitFor(() => {
@@ -229,14 +225,21 @@ describe("useMultiSigWallet", () => {
 
     it("should handle withdrawal failure when not whitelisted", async () => {
       const revertError = new Error("Caller not whitelisted")
-      mockWalletClient.writeContract.mockRejectedValue(revertError)
+      const mockSendTransaction = jest.fn().mockRejectedValue(revertError)
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
       await act(async () => {
-        await expect(result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)).rejects.toThrow(
-          "Caller not whitelisted"
-        )
+        await expect(
+          result.current.withdraw(
+            mockWalletAddress,
+            mockRecipientAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("Caller not whitelisted")
       })
 
       await waitFor(() => {
@@ -247,14 +250,21 @@ describe("useMultiSigWallet", () => {
 
     it("should handle insufficient balance error", async () => {
       const balanceError = new Error("Insufficient JPYC balance")
-      mockWalletClient.writeContract.mockRejectedValue(balanceError)
+      const mockSendTransaction = jest.fn().mockRejectedValue(balanceError)
+      const mockNexusClient = {}
 
       const { result } = renderHook(() => useMultiSigWallet())
 
       await act(async () => {
-        await expect(result.current.withdraw(mockWalletAddress, mockRecipientAddress, mockAmount)).rejects.toThrow(
-          "Insufficient JPYC balance"
-        )
+        await expect(
+          result.current.withdraw(
+            mockWalletAddress,
+            mockRecipientAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("Insufficient JPYC balance")
       })
     })
   })

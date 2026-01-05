@@ -3,10 +3,10 @@
 import { Button, Input, Spinner } from "@/components/ui"
 import { useCaseContext } from "@/context/CaseContext"
 import useJPYCBalance from "@/hooks/useJPYCBalance"
-import useMultiSigWallet from "@/hooks/useMultiSigWallet"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useWallets } from "@privy-io/react-auth"
 import { formatEther, parseEther } from "ethers"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -33,22 +33,15 @@ const parseAmount = (value: string) => {
  */
 export default function DonationForm({ caseId }: { caseId: string }) {
   const { submitDonation, transactionStatus, error } = useCaseContext()
-  const { getConnectedAddress } = useMultiSigWallet()
-  const [walletAddress, setWalletAddress] = useState<`0x${string}` | null>(null)
+  const { wallets } = useWallets()
+
+  // Privyの埋め込みウォレットアドレスを取得
+  const walletAddress = (wallets?.[0]?.address as `0x${string}`) ?? null
 
   // JPYC残高の取得
   const { jpycBalance, isLoading: balanceLoading } = useJPYCBalance(
     walletAddress ?? "0x0000000000000000000000000000000000000000"
   )
-
-  // 接続中のウォレットアドレスを取得
-  useEffect(() => {
-    getConnectedAddress()
-      .then((address) => setWalletAddress(address))
-      .catch(() => {
-        setWalletAddress(null)
-      })
-  }, [getConnectedAddress])
 
   // バリデーションスキーマの定義
   const schema = useMemo(() => {

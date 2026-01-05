@@ -329,12 +329,23 @@ describe("CaseContext", () => {
   describe("requestWithdrawal", () => {
     it("should execute withdrawal with connected address", async () => {
       const withdraw = jest.fn().mockResolvedValue("0xwithdrawhash")
-      const getConnectedAddress = jest.fn().mockResolvedValue("0xabc0000000000000000000000000000000000000")
+      const getConnectedAddress = jest.fn().mockReturnValue("0xabc0000000000000000000000000000000000000")
+      const sendTransaction = jest.fn().mockResolvedValue("0xtxhash")
+      const initializeBiconomyAccount = jest.fn().mockResolvedValue({
+        nexusClient: {},
+        address: "0x1234567890123456789012345678901234567890"
+      })
       ;(useMultiSigWallet as jest.Mock).mockReturnValue({
         isWhitelisted: jest.fn(),
         addRecipient: jest.fn(),
         withdraw,
         getConnectedAddress,
+        isLoading: false,
+        error: null
+      })
+      ;(useBiconomy as jest.Mock).mockReturnValue({
+        initializeBiconomyAccount,
+        sendTransaction,
         isLoading: false,
         error: null
       })
@@ -349,11 +360,13 @@ describe("CaseContext", () => {
         await result.current.requestWithdrawal("case-1", BigInt("1000000000000000000"))
       })
 
-      expect(getConnectedAddress).toHaveBeenCalled()
+      expect(getConnectedAddress).toHaveBeenCalledWith("0x1234567890123456789012345678901234567890")
       expect(withdraw).toHaveBeenCalledWith(
         "0x1234567890123456789012345678901234567890",
         "0xabc0000000000000000000000000000000000000",
-        BigInt("1000000000000000000")
+        BigInt("1000000000000000000"),
+        sendTransaction,
+        {}
       )
       expect(result.current.transactionStatus).toBe("success")
     })

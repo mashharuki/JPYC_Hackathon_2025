@@ -5,6 +5,7 @@ import { useCaseContext } from "@/context/CaseContext"
 import useJPYCBalance from "@/hooks/useJPYCBalance"
 import useMultiSigWallet from "@/hooks/useMultiSigWallet"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useWallets } from "@privy-io/react-auth"
 import { formatEther, parseEther } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -36,18 +37,14 @@ const parseAmount = (value: string) => {
 export default function WithdrawalForm({ caseId, walletAddress }: { caseId: string; walletAddress: `0x${string}` }) {
   const { requestWithdrawal, transactionStatus, error } = useCaseContext()
   const { isWhitelisted, getConnectedAddress } = useMultiSigWallet()
-  const [connectedAddress, setConnectedAddress] = useState<`0x${string}` | null>(null)
+  const { wallets } = useWallets()
   const [whitelisted, setWhitelisted] = useState<boolean | null>(null)
+
+  // Privyの埋め込みウォレットアドレスを取得
+  const connectedAddress = (wallets?.[0]?.address as `0x${string}`) ?? null
 
   // JPYC残高の取得
   const { jpycBalance, isLoading: balanceLoading } = useJPYCBalance(walletAddress)
-
-  // 接続中のウォレットアドレスを取得
-  useEffect(() => {
-    getConnectedAddress()
-      .then((address) => setConnectedAddress(address))
-      .catch(() => setConnectedAddress(null))
-  }, [getConnectedAddress])
 
   // ホワイトリスト登録状況の確認
   useEffect(() => {

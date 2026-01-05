@@ -144,18 +144,19 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
         setTransactionStatus("pending")
         setError(null)
 
-        let txHash: `0x${string}`
+        // Biconomyアカウントを初期化
+        const { nexusClient } = await initializeBiconomyAccount()
 
-        try {
-          const { nexusClient } = await initializeBiconomyAccount()
-          txHash = await donateWithProof(donationContractAddress, targetCase.walletAddress, amount, {
-            sendTransaction,
-            nexusClient
-          })
-        } catch (gaslessError) {
-          txHash = await donateWithProof(donationContractAddress, targetCase.walletAddress, amount)
-        }
+        // Biconomy経由で寄付を実行
+        const txHash = await donateWithProof(
+          donationContractAddress,
+          targetCase.walletAddress,
+          amount,
+          sendTransaction,
+          nexusClient
+        )
 
+        // Supabaseのケース情報を更新
         const newAmount = (targetCase.currentAmount + amount).toString()
         const response = await fetch(`/api/cases/${caseId}`, {
           method: "PATCH",
@@ -197,8 +198,14 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
         setTransactionStatus("pending")
         setError(null)
 
-        const recipientAddress = await getConnectedAddress()
-        const txHash = await withdraw(targetCase.walletAddress, recipientAddress, amount)
+        // Biconomyアカウントを初期化
+        const { nexusClient, address } = await initializeBiconomyAccount()
+
+        // 接続中のアドレスを取得（Privyから）
+        const recipientAddress = getConnectedAddress(address as `0x${string}`)
+
+        // Biconomy経由で引き出しを実行
+        const txHash = await withdraw(targetCase.walletAddress, recipientAddress, amount, sendTransaction, nexusClient)
 
         setTransactionStatus("success")
         return txHash
@@ -209,7 +216,7 @@ export const CaseContextProvider: React.FC<ProviderProps> = ({ children }) => {
         throw error
       }
     },
-    [cases, getConnectedAddress, withdraw]
+    [cases, getConnectedAddress, withdraw, initializeBiconomyAccount, sendTransaction]
   )
 
   /**

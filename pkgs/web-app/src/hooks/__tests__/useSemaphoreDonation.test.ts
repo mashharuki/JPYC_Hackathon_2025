@@ -1,6 +1,6 @@
 import useSemaphoreIdentity from "@/hooks/useSemaphoreIdentity"
 import { CONTRACT_ADDRESSES } from "@/utils/web3/addresses"
-import { renderHook, waitFor } from "@testing-library/react"
+import { act, renderHook, waitFor } from "@testing-library/react"
 import useSemaphoreDonation from "../useSemaphoreDonation"
 
 // viem actions のモック
@@ -50,7 +50,8 @@ jest.mock("viem", () => ({
   createPublicClient: jest.fn(() => mockPublicClient),
   http: jest.fn(),
   custom: jest.fn(),
-  parseUnits: jest.fn((value: string) => BigInt(value) * BigInt(10 ** 18))
+  parseUnits: jest.fn((value: string) => BigInt(value) * BigInt(10 ** 18)),
+  encodeFunctionData: jest.fn(() => "0xencodedData" as `0x${string}`)
 }))
 
 // Mock next/navigation
@@ -117,19 +118,8 @@ describe("useSemaphoreDonation", () => {
   describe("donateWithProof", () => {
     it("should approve JPYC and execute donation with proof successfully", async () => {
       const { generateProof } = require("@semaphore-protocol/core")
-      const { supabase } = require("@/utils/supabase")
-
-      // Mock Supabase response for Merkle root
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: { merkle_root: mockMerkleRoot.toString() },
-              error: null
-            })
-          }))
-        }))
-      })
+      const mockSendTransaction = jest.fn().mockResolvedValueOnce("0xapprovalHash").mockResolvedValueOnce(mockTxHash)
+      const mockNexusClient = {}
 
       // Mock proof generation
       generateProof.mockResolvedValue({
@@ -138,34 +128,34 @@ describe("useSemaphoreDonation", () => {
         points: mockProof
       })
 
-      mockWalletClient.writeContract.mockResolvedValue(mockTxHash)
-
       const { result } = renderHook(() => useSemaphoreDonation())
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const txHash = await result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
+      let txHash
+      await act(async () => {
+        txHash = await result.current.donateWithProof(
+          mockDonationContractAddress,
+          mockWalletAddress,
+          mockAmount,
+          mockSendTransaction,
+          mockNexusClient
+        )
+      })
 
       expect(txHash).toBe(mockTxHash)
 
       // Verify JPYC approve was called first
-      expect(mockWalletClient.writeContract).toHaveBeenCalledWith(
-        expect.objectContaining({
-          address: mockJPYCAddress,
-          functionName: "approve",
-          args: [mockDonationContractAddress, mockAmount]
-        })
-      )
+      expect(mockSendTransaction).toHaveBeenNthCalledWith(1, mockJPYCAddress, "0xencodedData", mockNexusClient)
 
-      // Verify donateWithProof was called
-      expect(mockWalletClient.writeContract).toHaveBeenCalledWith(
-        expect.objectContaining({
-          address: mockDonationContractAddress,
-          functionName: "donateWithProof",
-          args: [mockMerkleRoot, mockNullifier, mockProof, mockWalletAddress, mockAmount]
-        })
+      // Verify donateWithProof was called second
+      expect(mockSendTransaction).toHaveBeenNthCalledWith(
+        2,
+        mockDonationContractAddress,
+        "0xencodedData",
+        mockNexusClient
       )
 
       // Verify proof generation was called
@@ -174,18 +164,10 @@ describe("useSemaphoreDonation", () => {
 
     it("should set loading state during donation", async () => {
       const { generateProof } = require("@semaphore-protocol/core")
-      const { supabase } = require("@/utils/supabase")
-
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: { merkle_root: mockMerkleRoot.toString() },
-              error: null
-            })
-          }))
-        }))
-      })
+      const mockSendTransaction = jest
+        .fn()
+        .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(mockTxHash), 100)))
+      const mockNexusClient = {}
 
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
@@ -193,19 +175,26 @@ describe("useSemaphoreDonation", () => {
         points: mockProof
       })
 
-      mockWalletClient.writeContract.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockTxHash), 100))
-      )
-
       const { result } = renderHook(() => useSemaphoreDonation())
 
-      const donatePromise = result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
+      let donatePromise
+      await act(async () => {
+        donatePromise = result.current.donateWithProof(
+          mockDonationContractAddress,
+          mockWalletAddress,
+          mockAmount,
+          mockSendTransaction,
+          mockNexusClient
+        )
+      })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(true)
       })
 
-      await donatePromise
+      await act(async () => {
+        await donatePromise
+      })
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
@@ -214,27 +203,25 @@ describe("useSemaphoreDonation", () => {
 
     it("should handle proof generation failure", async () => {
       const { generateProof } = require("@semaphore-protocol/core")
-      const { supabase } = require("@/utils/supabase")
-
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: { merkle_root: mockMerkleRoot.toString() },
-              error: null
-            })
-          }))
-        }))
-      })
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
 
       const proofError = new Error("Failed to generate proof")
       generateProof.mockRejectedValue(proofError)
 
       const { result } = renderHook(() => useSemaphoreDonation())
 
-      await expect(
-        result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
-      ).rejects.toThrow("Failed to generate proof")
+      await act(async () => {
+        await expect(
+          result.current.donateWithProof(
+            mockDonationContractAddress,
+            mockWalletAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("Failed to generate proof")
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -244,18 +231,9 @@ describe("useSemaphoreDonation", () => {
 
     it("should handle JPYC approve failure", async () => {
       const { generateProof } = require("@semaphore-protocol/core")
-      const { supabase } = require("@/utils/supabase")
-
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: { merkle_root: mockMerkleRoot.toString() },
-              error: null
-            })
-          }))
-        }))
-      })
+      const approveError = new Error("Insufficient balance")
+      const mockSendTransaction = jest.fn().mockRejectedValue(approveError)
+      const mockNexusClient = {}
 
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
@@ -263,14 +241,19 @@ describe("useSemaphoreDonation", () => {
         points: mockProof
       })
 
-      const approveError = new Error("Insufficient balance")
-      mockWalletClient.writeContract.mockRejectedValue(approveError)
-
       const { result } = renderHook(() => useSemaphoreDonation())
 
-      await expect(
-        result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
-      ).rejects.toThrow("Insufficient balance")
+      await act(async () => {
+        await expect(
+          result.current.donateWithProof(
+            mockDonationContractAddress,
+            mockWalletAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("Insufficient balance")
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -280,18 +263,12 @@ describe("useSemaphoreDonation", () => {
 
     it("should handle donation transaction failure", async () => {
       const { generateProof } = require("@semaphore-protocol/core")
-      const { supabase } = require("@/utils/supabase")
-
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: { merkle_root: mockMerkleRoot.toString() },
-              error: null
-            })
-          }))
-        }))
-      })
+      const donationError = new Error("Proof verification failed")
+      const mockSendTransaction = jest
+        .fn()
+        .mockResolvedValueOnce("0xapprovalHash") // approve succeeds
+        .mockRejectedValueOnce(donationError) // donation fails
+      const mockNexusClient = {}
 
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
@@ -299,17 +276,19 @@ describe("useSemaphoreDonation", () => {
         points: mockProof
       })
 
-      // Approve succeeds, but donation fails
-      const donationError = new Error("Proof verification failed")
-      mockWalletClient.writeContract
-        .mockResolvedValueOnce(mockTxHash) // approve succeeds
-        .mockRejectedValueOnce(donationError) // donation fails
-
       const { result } = renderHook(() => useSemaphoreDonation())
 
-      await expect(
-        result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
-      ).rejects.toThrow("Proof verification failed")
+      await act(async () => {
+        await expect(
+          result.current.donateWithProof(
+            mockDonationContractAddress,
+            mockWalletAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("Proof verification failed")
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
@@ -318,6 +297,8 @@ describe("useSemaphoreDonation", () => {
     })
 
     it("should throw error when Semaphore identity is not available", async () => {
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
       ;(useSemaphoreIdentity as jest.Mock).mockReturnValue({
         _identity: null,
         loading: false,
@@ -326,9 +307,17 @@ describe("useSemaphoreDonation", () => {
 
       const { result } = renderHook(() => useSemaphoreDonation())
 
-      await expect(
-        result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
-      ).rejects.toThrow("Semaphore identity is not available")
+      await act(async () => {
+        await expect(
+          result.current.donateWithProof(
+            mockDonationContractAddress,
+            mockWalletAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("Semaphore identity is not available")
+      })
     })
   })
 
@@ -395,41 +384,12 @@ describe("useSemaphoreDonation", () => {
   describe("error handling", () => {
     it("should clear error when new operation starts", async () => {
       const { generateProof } = require("@semaphore-protocol/core")
-      const { supabase } = require("@/utils/supabase")
+      const mockSendTransaction = jest.fn()
+      const mockNexusClient = {}
 
       // First operation fails
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: null,
-              error: new Error("First error")
-            })
-          }))
-        }))
-      })
-
-      const { result } = renderHook(() => useSemaphoreDonation())
-
-      await expect(
-        result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
-      ).rejects.toThrow()
-
-      await waitFor(() => {
-        expect(result.current.error).toBeTruthy()
-      })
-
-      // Second operation succeeds
-      supabase.from.mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({
-              data: { merkle_root: mockMerkleRoot.toString() },
-              error: null
-            })
-          }))
-        }))
-      })
+      const firstError = new Error("First error")
+      mockSendTransaction.mockRejectedValueOnce(firstError)
 
       generateProof.mockResolvedValue({
         merkleTreeRoot: mockMerkleRoot,
@@ -437,9 +397,36 @@ describe("useSemaphoreDonation", () => {
         points: mockProof
       })
 
-      mockWalletClient.writeContract.mockResolvedValue(mockTxHash)
+      const { result } = renderHook(() => useSemaphoreDonation())
 
-      await result.current.donateWithProof(mockDonationContractAddress, mockWalletAddress, mockAmount)
+      await act(async () => {
+        await expect(
+          result.current.donateWithProof(
+            mockDonationContractAddress,
+            mockWalletAddress,
+            mockAmount,
+            mockSendTransaction,
+            mockNexusClient
+          )
+        ).rejects.toThrow("First error")
+      })
+
+      await waitFor(() => {
+        expect(result.current.error).toBeTruthy()
+      })
+
+      // Second operation succeeds
+      mockSendTransaction.mockResolvedValueOnce("0xapprovalHash").mockResolvedValueOnce(mockTxHash)
+
+      await act(async () => {
+        await result.current.donateWithProof(
+          mockDonationContractAddress,
+          mockWalletAddress,
+          mockAmount,
+          mockSendTransaction,
+          mockNexusClient
+        )
+      })
 
       await waitFor(() => {
         expect(result.current.error).toBeNull()

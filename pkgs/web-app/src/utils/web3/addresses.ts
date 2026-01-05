@@ -4,8 +4,7 @@ export const CONTRACT_ADDRESSES = {
     SemaphoreVerifier: "0x39466Be45A95D44201924B04aB59985aFb427249",
     JPYCToken: "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1",
     InnocentSupportWallet: "0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b",
-    SemaphoreDonation: "0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2",
-    Feedback: "0x521a4A2D9A6542A1a578ecF362B8CBeE4Ef46e02"
+    SemaphoreDonation: "0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2"
   },
   // Hardhat Local
   31337: {
@@ -13,10 +12,6 @@ export const CONTRACT_ADDRESSES = {
     JPYCToken: "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1",
     InnocentSupportWallet: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
     SemaphoreDonation: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
-  },
-  // Sepolia
-  11155111: {
-    Feedback: "0x80D4401b98093Cc956b639bE5eD38465067d5D53"
   }
 } as const
 

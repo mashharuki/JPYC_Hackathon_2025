@@ -104,9 +104,7 @@ describe("useSemaphoreDonation", () => {
     mockUseSemaphoreContext.mockReturnValue({
       _users: [],
       refreshUsers: jest.fn(),
-      addUser: jest.fn(),
-      refreshFeedback: jest.fn(),
-      addFeedback: jest.fn()
+      addUser: jest.fn()
     })
     // Mock useSemaphoreIdentity default behavior
     ;(useSemaphoreIdentity as jest.Mock).mockReturnValue({

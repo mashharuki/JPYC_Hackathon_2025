@@ -7,11 +7,8 @@ import { baseSepolia } from "viem/chains"
 // SemaphoreContextType: コンテキストで共有されるデータの型定義
 export type SemaphoreContextType = {
   _users: string[] // グループに参加しているユーザー（Identity Commitment）のリスト
-  _feedback: string[] // 送信されたフィードバック（メッセージ）のリスト
   refreshUsers: () => Promise<string[]> // メンバーリストを最新の状態に更新し、更新されたリストを返す関数
   addUser: (user: string) => void // ローカルの状態にユーザーを一時的に追加する関数
-  refreshFeedback: () => Promise<void> // フィードバックリストを最新の状態に更新する関数
-  addFeedback: (feedback: string) => void // ローカルの状態にフィードバックを一時的に追加する関数
 }
 
 const SemaphoreContext = createContext<SemaphoreContextType | null>(null)
@@ -42,7 +39,6 @@ const getPublicClient = () => {
  */
 export const SemaphoreContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const [_users, setUsers] = useState<any[]>([])
-  const [_feedback, setFeedback] = useState<string[]>([])
 
   /**
    * refreshUsers: Semaphoreグループのメンバー一覧をコントラクトから取得します。
@@ -96,91 +92,18 @@ export const SemaphoreContextProvider: React.FC<ProviderProps> = ({ children }) 
   )
 
   /**
-   * refreshFeedback: 検証済みの証明（フィードバック）の一覧をコントラクトから取得します。
-   * viemのgetLogsを使用してProofValidatedイベントからフィードバックを取得します。
-   */
-  const refreshFeedback = useCallback(async (): Promise<void> => {
-    try {
-      const publicClient = getPublicClient()
-
-      // ProofValidatedイベントのABI定義
-      const proofValidatedEvent = parseAbiItem(
-        "event ProofValidated(uint256 indexed groupId, uint256 merkleTreeDepth, uint256 indexed merkleTreeRoot, uint256 nullifier, uint256 message, uint256 indexed scope, uint256[8] points)"
-      )
-
-      // ProofValidatedイベントログを取得
-      const logs = await publicClient.getLogs({
-        address: process.env.NEXT_PUBLIC_SEMAPHORE_CONTRACT_ADDRESS as `0x${string}`,
-        event: proofValidatedEvent,
-        args: {
-          groupId: BigInt(process.env.NEXT_PUBLIC_GROUP_ID as string)
-        },
-        fromBlock: 0n,
-        toBlock: "latest"
-      })
-
-      console.log("Fetched ProofValidated logs:", logs)
-
-      // messageフィールドをデコードしてフィードバック文字列として取得
-      const feedbackMessages = logs
-        .map((log) => {
-          const { args } = log
-          if (!args.message) {
-            console.log("No message in log:", log)
-            return ""
-          }
-
-          try {
-            // messageをbytes32形式の16進数文字列に変換してデコード
-            const messageHex = `0x${args.message.toString(16).padStart(64, "0")}` as `0x${string}`
-            console.log("Message value:", args.message)
-            console.log("Message hex:", messageHex)
-
-            // hexToStringでデコード（null文字を除去）
-            const decoded = hexToString(messageHex, { size: 32 }).replace(/\0/g, "")
-            console.log("Decoded message:", decoded)
-
-            return decoded
-          } catch (error) {
-            console.error("Error decoding message:", error, "for log:", log)
-            return ""
-          }
-        })
-        .filter(Boolean)
-
-      console.log("All decoded feedback messages:", feedbackMessages)
-
-      setFeedback(feedbackMessages)
-    } catch (error) {
-      console.error("Error refreshing feedback:", error)
-      throw error
-    }
-  }, [])
-
-  const addFeedback = useCallback(
-    (feedback: string) => {
-      setFeedback([..._feedback, feedback])
-    },
-    [_feedback]
-  )
-
-  /**
    * コンポーネントのマウント時にデータを初回取得します。
    */
   useEffect(() => {
     refreshUsers()
-    refreshFeedback()
-  }, [refreshFeedback, refreshUsers])
+  }, [refreshUsers])
 
   return (
     <SemaphoreContext.Provider
       value={{
         _users,
-        _feedback,
         refreshUsers,
-        addUser,
-        refreshFeedback,
-        addFeedback
+        addUser
       }}
     >
       {children}

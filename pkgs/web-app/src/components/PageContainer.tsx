@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui"
 import { useLogContext } from "@/context/LogContext"
-import shortenString from "@/utils/shortenString"
 import { usePrivy } from "@privy-io/react-auth"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -22,25 +21,6 @@ export default function PageContainer({
   const { log } = useLogContext()
   const { login, logout, authenticated, ready } = usePrivy()
 
-  /**
-   * getExplorerLink: BlockExplorerへのリンクを生成する関数
-   * @param network
-   * @param address
-   * @returns
-   */
-  function getExplorerLink(network: string, address: string) {
-    switch (network) {
-      case "sepolia":
-        return `https://sepolia.etherscan.io/address/${address}`
-      case "arbitrum-sepolia":
-        return `https://sepolia.arbiscan.io/address/${address}`
-      case "base-sepolia":
-        return `https://sepolia.basescan.org/address/${address}`
-      default:
-        return ""
-    }
-  }
-
   return (
     <div className="page-wrapper">
       <div className="header">
@@ -48,16 +28,6 @@ export default function PageContainer({
           Innocence Ledger
         </Link>
         <div className="header-right">
-          <a
-            href={getExplorerLink(
-              process.env.NEXT_PUBLIC_DEFAULT_NETWORK as string,
-              process.env.NEXT_PUBLIC_FEEDBACK_CONTRACT_ADDRESS as string
-            )}
-            target="_blank"
-            rel="noreferrer noopener nofollow"
-          >
-            <div>{shortenString(process.env.NEXT_PUBLIC_FEEDBACK_CONTRACT_ADDRESS as string, [6, 4])}</div>
-          </a>
           <a
             href="https://github.com/mashharuki/JPYC_Hackathon_2025"
             target="_blank"

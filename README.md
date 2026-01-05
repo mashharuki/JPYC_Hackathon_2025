@@ -261,19 +261,10 @@ sequenceDiagram
 
 | コントラクト名            | アドレス                                                                                                                      | 説明                                         |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **SemaphoreVerifier**     | [0x39466Be45A95D44201924B04aB59985aFb427249](https://sepolia.basescan.org/address/0x39466Be45A95D44201924B04aB59985aFb427249) | Semaphore ZK Proof検証コントラクト (Groth16) |
+| **SemaphoreVerifier**     | [0xFA472F6f9529198AFBF55D2e9Ce02C8CCdd92368](https://sepolia.basescan.org/address/0xFA472F6f9529198AFBF55D2e9Ce02C8CCdd92368) | Semaphore ZK Proof検証コントラクト (Groth16) |
 | **JPYCトークン**          | [0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1](https://sepolia.basescan.org/address/0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1) | JPYCステーブルコイン (ERC20)                 |
-| **InnocentSupportWallet** | [0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b](https://sepolia.basescan.org/address/0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b) | MultiSig資金管理ウォレット (2/2署名)         |
-| **SemaphoreDonation**     | [0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2](https://sepolia.basescan.org/address/0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2) | 匿名寄付コントラクト (Semaphore統合)         |
-
-### Hardhat Local (開発環境)
-
-| コントラクト名        | アドレス                                   |
-| --------------------- | ------------------------------------------ |
-| SemaphoreVerifier     | 0x8A791620dd6260079BF849Dc5567aDC3F2FdC318 |
-| JPYCToken             | 0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1 |
-| InnocentSupportWallet | 0x610178dA211FEF7D417bC0e6FeD39F05609AD788 |
-| SemaphoreDonation     | 0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e |
+| **InnocentSupportWallet** | [0x3f916bADD44312c30D1C3eb57a37ef3D288009Bc](https://sepolia.basescan.org/address/0x3f916bADD44312c30D1C3eb57a37ef3D288009Bc) | MultiSig資金管理ウォレット (2/2署名)         |
+| **SemaphoreDonation**     | [0xabeaFB3246F8460Ab5080f22374645d6edf9D827](https://sepolia.basescan.org/address/0xabeaFB3246F8460Ab5080f22374645d6edf9D827) | 匿名寄付コントラクト (Semaphore統合)         |
 
 ## 動かし方
 
@@ -357,13 +348,13 @@ sequenceDiagram
 - wallet:addRecipient
 
   ```bash
-  yarn contracts wallet:addRecipient --wallet 0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b --nonce 3 --recipient 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072 --logs true --network baseSepolia
+  yarn contracts wallet:addRecipient --wallet 0x3f916bADD44312c30D1C3eb57a37ef3D288009Bc --nonce 3 --recipient 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072 --logs true --network baseSepolia
   ```
 
 - wallet:removeRecipient
 
   ```bash
-  yarn contracts wallet:removeRecipient --wallet 0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b --nonce 2 --recipient 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072 --logs true --network baseSepolia
+  yarn contracts wallet:removeRecipient --wallet 0x3f916bADD44312c30D1C3eb57a37ef3D288009Bc --nonce 2 --recipient 0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072 --logs true --network baseSepolia
   ```
 
 - wallet:withdraw

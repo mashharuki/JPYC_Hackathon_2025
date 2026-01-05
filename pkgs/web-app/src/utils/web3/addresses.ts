@@ -1,10 +1,10 @@
 export const CONTRACT_ADDRESSES = {
   // Base Sepolia
   84532: {
-    SemaphoreVerifier: "0x39466Be45A95D44201924B04aB59985aFb427249",
+    SemaphoreVerifier: "0xFA472F6f9529198AFBF55D2e9Ce02C8CCdd92368",
     JPYCToken: "0xda683fe053b4344F3Aa5Db6Cbaf3046F7755e5E1",
-    InnocentSupportWallet: "0xdc241458C483BDa3fB06d22B245Ca6823c0f4b8b",
-    SemaphoreDonation: "0x0450e3d44EbAB0eEe27aB065C3C3956Ac6Eb65f2"
+    InnocentSupportWallet: "0x3f916bADD44312c30D1C3eb57a37ef3D288009Bc",
+    SemaphoreDonation: "0xabeaFB3246F8460Ab5080f22374645d6edf9D827"
   },
   // Hardhat Local
   31337: {

@@ -86,7 +86,11 @@ export default function useSemaphoreDonation(): UseSemaphoreDonationResult {
         const group = new Group(_users)
 
         // 2. Semaphore Proof を生成
-        const { merkleTreeRoot, nullifier, points: proof } = await generateProof(identity, group, amount, walletAddress)
+        const {
+          merkleTreeRoot,
+          nullifier,
+          points: proof
+        } = await generateProof(identity, group, amount, walletAddress, 20)
 
         // 3. JPYC の approve トランザクションデータを生成
         const approveData = encodeFunctionData({

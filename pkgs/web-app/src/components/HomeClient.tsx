@@ -4,13 +4,25 @@ import DonationForm from "@/components/DonationForm"
 import { Spinner } from "@/components/ui"
 import WithdrawalForm from "@/components/WithdrawalForm"
 import { CaseContextProvider, useCaseContext } from "@/context/CaseContext"
+import { formatEther } from "ethers"
 import { useEffect, useMemo } from "react"
 
 /**
  * 金額をフォーマットするヘルパー関数
  */
+const formatNumberString = (value: string) => value.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
 const formatAmount = (value: bigint) => {
-  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  const formatted = formatEther(value)
+  const [whole, fraction] = formatted.split(".")
+  const wholeWithCommas = formatNumberString(whole)
+
+  if (!fraction || /^0+$/.test(fraction)) {
+    return wholeWithCommas
+  }
+
+  const trimmedFraction = fraction.replace(/0+$/, "").slice(0, 6)
+  return trimmedFraction ? `${wholeWithCommas}.${trimmedFraction}` : wholeWithCommas
 }
 
 /**
